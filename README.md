@@ -1,84 +1,309 @@
-# USDC to ETH Swap Demo
+# ACK USDC to ETH Swap Demo
 
-This demo showcases agent-to-agent communication using the ACK Hub SDK. It demonstrates how AI agents collaborate to execute cryptocurrency swaps, with one agent (Agent A) representing a user who wants to swap USDC for ETH, and another agent (Agent B) providing the swap service.
+![Agent Commerce Kit](https://github.com/agentcommercekit/ack/raw/main/assets/readme-hero.png)
 
-## 🎯 Overview
+[![Run on Replit](https://replit.com/badge?caption=Run%20on%20Replit)](https://replit.new/github.com/catena-labs/ack-swap-demo)
 
-- **Agent A (User)**: Represents a user wanting to swap USDC for ETH, handles payment execution
-- **Agent B (Swap Service)**: A specialized swap agent that:
-  - Provides current exchange rates (3000-4000 USDC per ETH)
-  - Creates payment requests
-  - Executes swaps on a mock DEX
-  - Sends ETH to the user's wallet
+[Explore ACK-Lab Developer Preview](https://ack-lab.catenalabs.com)
 
-## 🚀 Quick Start
+A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (ACK), showcasing how autonomous AI agents can negotiate and execute USDC to ETH swaps with built-in authentication and payment processing.
+
+This demo showcases agent-to-agent communication using the ACK Hub SDK. It 
+demonstrates how AI agents collaborate to execute cryptocurrency swaps, with 
+one agent (Agent A) representing a user who wants to swap USDC for ETH, and 
+another agent (Agent B) providing the swap service.
+
+
+## 🌟 About Agent Commerce Kit (ACK)
+
+**Agent Commerce Kit (ACK)** is a set of open-source patterns built by [Catena Labs](https://www.catenalabs.com) to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
+
+### The Vision
+
+Rapid advancements in AI are creating a new "agent economy" where autonomous agents can become powerful economic participants. However, existing financial systems present significant barriers:
+
+- **Identity Crisis**: No widely adopted standards for identifying and authorizing AI agents
+- **Transaction Barriers**: Legacy systems impose friction incompatible with autonomous, high-speed agent workflows
+- **Untapped Economic Potential**: Current systems cannot support novel transaction models like micropayments for data or direct agent-to-agent payments
+
+ACK solves these challenges through two complementary protocols:
+- **ACK-ID**: Verifiable agent identity through DIDs and Verifiable Credentials
+- **ACK-Pay**: Agent-native payment patterns for seamless transactions
+
+Learn more at [agentcommercekit.com](https://agentcommercekit.com)
+
+## 🚀 Getting Started with ACK-Lab
+
+**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview platform where you can leverage ACK implementations to give your agents:
+
+1. **An Identity**: A verifiable, cryptographic ID so your agent can prove who it is
+2. **A Wallet**: A secure wallet so your agent can pay and get paid
+3. **A Rulebook**: Policies that govern what your agent is allowed to do
 
 ### Prerequisites
 
-- Node.js 18 or higher
+To run this demo, you need to:
+
+1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
+2. **Register your agents** in the ACK-Lab app to obtain credentials
+3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com)
+
+Once you have registered two agents (one for the user, one for the swap service), you'll receive CLIENT_ID and CLIENT_SECRET credentials for each agent to use with the SDK.
+
+On Replit, click "Run" at the top of your screen to get started.
+
+<div align="center">
+  <img src="./assets/replit-run-icon.png" alt="Get Started on Replit" width="100">
+</div>
+
+## 🔐 Agent Commerce Kit Integration
+
+This demo leverages the **Agent Commerce Kit (ACK)** to enable secure, robust transactions between autonomous agents. ACK provides enterprise-grade infrastructure for agent commerce through two core components:
+
+### ACK-ID (Identity & Authentication)
+- **Secure Agent Identity**: Each agent receives unique credentials (CLIENT_ID and CLIENT_SECRET) that serve as their digital identity
+- **Credential Management**: Handles authentication tokens and secure credential exchange between agents
+- **Trust Framework**: Ensures only authorized agents can participate in transactions
+
+### ACK-Pay (Payment Processing)
+- **Secure Transactions**: Processes payments between agents with built-in security and compliance
+- **Payment Tokens**: Generates cryptographically secure payment tokens for transaction authorization
+- **Settlement**: Handles the financial settlement between agent wallets
+
+### ack-lab SDK
+The `@ack-hub/sdk` npm package abstracts the complexity of credential exchange and payment processing, providing:
+- **Simple API Interface**: Clean methods for agent authentication and payment operations
+- **Built-in Security**: Automatic handling of JWT tokens, signatures, and encryption
+- **Agent Communication**: `createAgentCaller()` method for establishing secure agent-to-agent connections
+- **Transaction Safety**: Ensures atomicity and reliability of financial operations
+
+## 🏗️ Architecture & Agent Communication
+
+### Agent Server Architecture
+
+The demo spins up two independent agent servers that communicate via HTTP endpoints:
+
+```
+                                          ┌─────────────────┐
+                                          │  Pyth Network   │
+                                          │ (Price Oracle)  │
+                                          │ • ETH/USD rates │
+                                          └────────┬────────┘
+                                                   │
+┌─────────────────┐                      ┌────────▼────────┐
+│   Agent A       │  HTTP POST /chat     │   Agent B       │
+│    (User)       │─────────────────────▶│ (Swap Service)  │
+│  Port: 7576     │◀─────────────────────│  Port: 7577     │
+└─────────────────┘  Negotiation Flow    └─────────────────┘
+        │                                          │
+        └──────────────────┬───────────────────────┘
+                           │
+                    ACK Lab SDK
+                 (api.ack-lab.com)
+              ┌────────────┴────────────┐
+              │ • Identity Verification  │
+              │ • Payment Processing     │
+              │ • Token Generation       │
+              └─────────────────────────┘
+```
+
+### How Agents Communicate
+
+1. **Agent Initialization**: Each agent is instantiated with ACK Lab SDK credentials:
+   ```typescript
+   const agentASdk = new AckLabSdk({
+     baseUrl: "https://api.ack-lab.com",
+     clientId: process.env.CLIENT_ID_AGENT_A,
+     clientSecret: process.env.CLIENT_SECRET_AGENT_A
+   })
+   ```
+
+2. **Secure Connection**: Agent A creates a secure caller to Agent B's `/chat` endpoint:
+   ```typescript
+   const callAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
+   ```
+
+3. **Message Exchange**: Agents communicate through structured HTTP requests to `/chat` endpoints, with the SDK handling:
+   - Authentication
+   - Request signing
+   - Token validation
+   - Response verification
+
+4. **Payment Flow**: When agents agree on a swap:
+   - Agent B fetches real-time ETH/USD price from Pyth Network
+   - Agent B generates a payment token via ACK-Pay
+   - Agent A validates and processes the payment
+   - Agent B executes the swap and sends ETH upon payment confirmation
+
+## 🚀 Running on Replit (Primary Method)
+
+The demo is optimized for Replit's cloud environment with automatic port forwarding:
+
+### Replit Port Configuration
+- **Agent A**: Internal port 7576 → External port 3000
+- **Agent B**: Internal port 7577 → External port 3001  
+- **Web UI**: Internal port 3000 → External port 80
+
+### Quick Start on Replit
+
+1. **Import the Repository**
+   - Click "Import from GitHub" in Replit
+   - Enter the repository URL
+
+2. **Configure Environment Variables**
+   - Create a `.env` file or use Replit Secrets
+   - Add your ACK Lab credentials:
+   ```env
+   ANTHROPIC_API_KEY=your_anthropic_key
+   CLIENT_ID_AGENT_A=your_agent_a_client_id
+   CLIENT_SECRET_AGENT_A=your_agent_a_client_secret
+   CLIENT_ID_AGENT_B=your_agent_b_client_id
+   CLIENT_SECRET_AGENT_B=your_agent_b_client_secret
+   ```
+
+3. **Run the Demo**
+   - Click the "Run" button in Replit
+   - The setup script (`./setup-and-run.sh`) will automatically:
+     - Install dependencies
+     - Start both agent servers
+     - Launch the interactive menu
+
+4. **Access Points on Replit**
+   - Agent A API: `https://[your-repl-name].[username].repl.co:3000`
+   - Agent B API: `https://[your-repl-name].[username].repl.co:3001`
+   - Web UI: `https://[your-repl-name].[username].repl.co`
+
+## 💻 Local Execution (Secondary Method)
+
+For local development and testing:
+
+### Prerequisites
+- Node.js 18+
 - npm or pnpm
-- Anthropic API key
-- ACK Lab SDK credentials (for both agents)
 
 ### Setup
 
-1. **Install dependencies**:
+1. **Clone and Configure**
 ```bash
-npm install
+   git clone <repository-url>
+   cd ack-private-swap-demo
 ```
 
-2. **Configure environment variables**:
-
-Create a `.env` file in the root directory with your credentials:
-
+2. **Create `.env` file** with your credentials:
 ```env
-# AckLab SDK Credentials for Agent A (User)
-CLIENT_ID_AGENT_A=<your-agent-a-client-id>
-CLIENT_SECRET_AGENT_A=<your-agent-a-client-secret>
+   ANTHROPIC_API_KEY=your_anthropic_key
+   CLIENT_ID_AGENT_A=your_agent_a_client_id
+   CLIENT_SECRET_AGENT_A=your_agent_a_client_secret
+   CLIENT_ID_AGENT_B=your_agent_b_client_id
+   CLIENT_SECRET_AGENT_B=your_agent_b_client_secret
+   ```
 
-# AckLab SDK Credentials for Agent B (Swap Service)
-CLIENT_ID_AGENT_B=<your-agent-b-client-id>
-CLIENT_SECRET_AGENT_B=<your-agent-b-client-secret>
-
-# Anthropic API Key
-ANTHROPIC_API_KEY=<your-anthropic-api-key>
-```
-
-## 📱 Running the Demo
-
-### Option 1: CLI Demo
-
-1. **Start the agent servers** (in one terminal):
+3. **Run the Setup Script**
 ```bash
-npm run agents:start
-```
+   ./setup-and-run.sh
+   ```
 
-This starts:
-- Agent A (User) on port 7576
-- Agent B (Swap Service) on port 7577
+### Local Access Points
+- Agent A: `http://localhost:7576`
+- Agent B: `http://localhost:7577`
+- Web UI: `http://localhost:3000`
 
-2. **Run the CLI demo** (in another terminal):
+## 🔧 Setup Script Deep Dive
+
+The `setup-and-run.sh` script orchestrates the entire demo environment:
+
+### 1. Environment Verification
+- Checks for required ACK Lab credentials
+- Prompts for missing credentials interactively
+- Validates all five required environment variables
+
+### 2. Dependency Management
+- Installs root dependencies via npm/pnpm
+- Conditionally installs web UI dependencies
+- Detects and uses appropriate package manager
+
+### 3. Agent Server Initialization
 ```bash
-npm start
-# or
-npm run demo:swap
+npx tsx swap-agents-server.ts &
+```
+This command:
+- Spawns two Node.js processes for Agent A and Agent B
+- Each agent runs an Express server with `/chat` endpoints
+- Agents are equipped with ACK Lab SDK instances for secure communication
+
+### 4. Service Health Checks
+- Polls `localhost:7576` and `localhost:7577` to verify agent availability
+- Provides feedback on server startup status
+- Handles graceful degradation if servers are slow to start
+
+### 5. Interactive Menu System
+- **CLI Demo**: Direct command-line interaction with agents
+- **Web UI**: Visual interface for monitoring swap execution
+- **Exit**: Graceful shutdown of all services
+
+## 📊 Demo Scenario
+
+The demo simulates a cryptocurrency swap service where:
+
+### Agent A (User)
+- Represents a user wanting to swap USDC for ETH
+- Manages wallet address (0x742d35Cc6634C0532925a3b844Bc9e7595f)
+- Executes payments using ACK-Pay
+- Confirms transaction receipts
+
+### Agent B (Swap Service)
+- Fetches real-time ETH/USD prices from Pyth Network
+- Creates payment requests for exact USDC amounts
+- Simulates DEX swap execution
+- Sends ETH to user's wallet upon payment confirmation
+
+### Price Oracle Integration
+- **Pyth Network**: Provides real-time ETH/USD price feeds
+- **Price Updates**: Fetched on-demand for each swap request
+- **Confidence Intervals**: Displays price confidence data
+- **Fallback Pricing**: Uses $3500 if oracle is unavailable
+
+## 🔑 Security Features
+
+- **End-to-End Encryption**: All agent communications are secured
+- **Token-Based Auth**: JWT tokens for session management
+- **Credential Isolation**: Each agent has separate credentials
+- **Payment Security**: ACK-Pay ensures secure financial transactions
+- **Price Oracle Verification**: Real-time price data from trusted source
+
+## 🛠️ Technical Implementation
+
+### Agent Configuration
+```typescript
+// Agent B with payment capabilities and price oracle
+const pythClient = new HermesClient("https://hermes.pyth.network", {})
+const agentBSdk = new AckLabSdk({
+  baseUrl: "https://api.ack-lab.com",
+  clientId: process.env.CLIENT_ID_AGENT_B,
+  clientSecret: process.env.CLIENT_SECRET_AGENT_B
+})
+
+// Serve authenticated agent with SDK
+serveAuthedAgent({
+  port: 7577,
+  runAgent: runAgentB,
+  sdk: agentBSdk
+})
 ```
 
-### Option 2: Web UI Demo
+### Communication Protocol
+- **Request**: JSON payload with swap instructions
+- **Processing**: AI model generates contextual responses
+- **Tools**: Agents use function calling for payments and swaps
+- **Response**: Structured JSON with transaction details
 
-1. **Start the agent servers** (in one terminal):
-```bash
-npm run agents:start
-```
-
-2. **Set up and run the Web UI** (in another terminal):
-```bash
-cd web-ui
-npm install
-npm run dev
-```
-
-3. **Open your browser** to `http://localhost:3000`
+### Swap Execution Flow
+1. **Rate Discovery**: Fetch current ETH/USD from Pyth Network
+2. **Payment Request**: Generate JWT token with swap details
+3. **Payment Processing**: Execute USDC payment via ACK-Pay
+4. **Swap Simulation**: Process swap on mock DEX
+5. **ETH Delivery**: Transfer ETH to user's wallet
+6. **Confirmation**: Return transaction hashes and receipt
 
 ## 💬 Example Usage
 
@@ -90,9 +315,12 @@ npm run dev
 Enter your request: swap 100 USDC for ETH
 
 >>> Processing request: swap 100 USDC for ETH
->>> Result: I'll help you swap 100 USDC for ETH. 
 
-Current exchange rate: 3542 USDC/ETH
+📊 Fetched ETH/USD price from Pyth: $3542.50
+   Price confidence: ±$2.30
+   Publish time: 2024-01-15T10:30:45.000Z
+
+Current exchange rate: 3542.50 USDC/ETH
 You will receive: 0.028234 ETH
 
 Payment request created for 100 USDC (10000 units)
@@ -101,101 +329,72 @@ Payment token: pay_abc123xyz...
 Executing payment...
 ✅ Payment successful! Receipt ID: rcpt_def456...
 
-Swap executed successfully!
-- USDC swapped: 100
-- ETH received: 0.028234
-- Transaction hash: 0x7f8a9b2c...
+🔄 Executing swap on DEX...
+   USDC: 100
+   Rate: 3542.50 USDC/ETH
+   ETH: 0.028234
 
-Your ETH has been sent to: 0x742d35Cc6634C0532925a3b844Bc9e7595f
+💸 Sending 0.028234 ETH to 0x742d35Cc6634C0532925a3b844Bc9e7595f
+
+Swap completed successfully!
+- Swap TX: 0x7f8a9b2c...
+- Send TX: 0x3d4e5f6a...
 ```
 
 ### Web UI Features
-- Visual step-by-step swap process
-- Real-time exchange rate updates
-- JWT payment token decoder for educational purposes
-- Transaction result display with all details
-- Interactive flow diagram showing agent architecture
+- **Visual Step Tracking**: Real-time progress through swap stages
+- **Live Price Updates**: Simulated exchange rate fluctuations
+- **JWT Token Decoder**: Educational tool to inspect payment tokens
+- **Transaction Results**: Complete swap details and hashes
+- **Flow Diagram**: Interactive visualization of agent architecture
 
-## 🏗️ Architecture
+## 🐛 Troubleshooting
 
-```
-User Input → Agent A (Port 7576) → Agent B (Port 7577)
-                ↓                          ↓
-          [Payment Execution]        [Swap Service]
-                ↓                          ↓
-          [Send Receipt]  →  →  →  [Execute Swap on DEX]
-                ↓                          ↓
-            Response ← ← ← ← ← ← ← [Send ETH to User]
-```
+### Replit-Specific Issues
+- **Port conflicts**: Check `.replit` file for correct port mappings
+- **External access**: Ensure your Repl is set to "Always On" for consistent availability
+- **Environment variables**: Use Replit Secrets for secure credential storage
 
-### How It Works
+### General Issues
+- **Missing credentials**: Ensure all five environment variables are set
+- **Connection refused**: Verify agent servers are running on correct ports
+- **Payment failures**: Check ACK Lab API connectivity and credentials
+- **Price oracle errors**: Verify internet connectivity for Pyth Network access
 
-1. **User Request**: User requests to swap USDC for ETH
-2. **Rate Check**: Agent A contacts Agent B to get the current exchange rate
-3. **Payment Request**: Agent B creates a payment request with the swap details
-4. **Payment Execution**: Agent A executes the USDC payment using ACK Lab SDK
-5. **Swap Execution**: Agent B receives payment confirmation and executes the swap on a mock DEX
-6. **ETH Transfer**: Agent B sends the swapped ETH to the user's wallet address
-7. **Confirmation**: User receives transaction details and confirmation
+## 💡 What Else Can You Build with ACK?
 
-## 📝 Scripts
+This swap demo is just one example of what's possible with ACK. Developers are using ACK to build:
 
-- `npm start` / `npm run demo:swap`: Run the CLI demo
-- `npm run agents:start`: Start both agent servers
-- `npm run dev`: Run CLI demo in watch mode
-- `npm run build`: Compile TypeScript files
-- `npm run lint`: Run ESLint
+### Financial Applications
+- **Treasury Management**: Agents that handle SME treasury operations, monitoring cash positions and optimizing working capital
+- **Supply Chain Payments**: Systems that automate payments based on verified deliveries
+- **Personal Finance Automation**: Consumer agents that pay bills, manage subscriptions, and execute transfers based on spending patterns
 
-## 🎓 Educational Notes
+### Agent-to-Agent Commerce
+- **Specialized Service Marketplaces**: Verified agents offering and purchasing specialized services from each other
+- **Data Marketplaces**: Agents autonomously purchasing datasets with micropayments
+- **Compute Resource Trading**: Agents negotiating and paying for computational resources
 
-This demo is designed to teach:
-- **Agent-to-Agent Communication**: How AI agents can collaborate on complex tasks
-- **Payment Token Architecture**: JWT-based payment authorization with ACK Lab SDK
-- **Swap Process Flow**: Step-by-step execution of a token swap
-- **Multi-Agent Systems**: Delegation and specialization in agent networks
+### Content & Services
+- **Monetized MCP Servers**: Model Context Protocol servers that require payment for premium tools or resources
+- **Paywalled Content Access**: Agents accessing publisher content through automated micropayments
+- **API Monetization**: Transform any API into an agent-accessible paid service
 
-**Note**: Exchange rates and transactions are simulated for demonstration purposes. In production, these would connect to real DEXs and blockchain networks.
+### Novel Economic Models
+- **Value-Based Pricing**: Dynamic pricing for AI services based on actual value delivered
+- **Micropayment Streams**: Continuous small payments for ongoing services
+- **Agent Reputation Systems**: Economic incentives tied to verifiable performance metrics
 
-## 📁 Project Structure
+These use cases demonstrate how ACK enables a new economy where AI agents can be trusted economic participants, opening unprecedented opportunities for innovation.
 
-```
-ack-swap-demo/
-├── cli-demos/
-│   └── swap-demo.ts         # CLI interface for the demo
-├── swap-agents-server.ts    # Agent A and Agent B server implementations
-├── serve-agent.ts           # Agent server utilities
-├── web-ui/                  # Next.js web interface (optional)
-│   ├── src/
-│   │   ├── app/            # Next.js app router
-│   │   └── components/     # React components
-│   └── README.md           # Web UI specific documentation
-├── package.json
-├── .env                    # Environment variables (create this)
-└── README.md              # This file
-```
+## 📚 Additional Resources
 
-## 🔧 Troubleshooting
-
-### Agents not starting
-- Check that ports 7576 and 7577 are not in use
-- Verify all environment variables are set correctly
-- Ensure Anthropic API key is valid
-
-### Payment failures
-- Verify ACK Lab SDK credentials for both agents
-- Check that both agents have proper permissions
-- Ensure payment amounts are in the correct units (100 USDC = 10000 units)
-
-### Web UI issues
-- Make sure agent servers are running first
-- Check browser console for errors
-- Verify `.env.local` file exists in `web-ui/` directory
-
-## 📚 Learn More
-
-- [ACK Lab SDK Documentation](https://docs.ack-lab.com)
-- [AI SDK Documentation](https://sdk.vercel.ai/docs)
-- [Anthropic Claude API](https://docs.anthropic.com)
+- [ACK Lab Developer Portal](https://ack-lab.catenalabs.com)
+- [Agent Commerce Kit Documentation](https://agentcommercekit.com)
+- [ACK Lab API Documentation](https://api.ack-lab.com)
+- [Catena Labs](https://www.catenalabs.com)
+- [Pyth Network Price Feeds](https://pyth.network)
+- [Replit Port Configuration Guide](https://docs.replit.com/hosting/deploying-http-servers)
 
 ## 📄 License
 

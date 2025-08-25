@@ -1,0 +1,23 @@
+modules = ["nodejs-18"]
+run = "./setup-and-run.sh"
+
+[nix]
+channel = "stable-25_05"
+
+[deployment]
+run = ["sh", "-c", "./setup-and-run.sh"]
+
+[[ports]]
+localPort = 7576
+externalPort = 3000
+
+[[ports]]
+localPort = 7577
+externalPort = 3001
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[gitHubImport]
+requiredFiles = [".replit"]

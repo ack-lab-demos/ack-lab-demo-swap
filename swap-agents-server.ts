@@ -4,13 +4,28 @@ import { serveAgent, serveAuthedAgent } from "./serve-agent"
 import { anthropic } from "@ai-sdk/anthropic"
 import { z } from "zod"
 import { AckLabSdk } from "@ack-hub/sdk"
+import { HermesClient } from "@pythnetwork/hermes-client"
+import { logger } from "./logger"
 
 // Configuration flag to decode and display JWT payloads
-const DECODE_JWT = true
+const DECODE_JWT = process.env.DECODE_JWT !== 'false' // Default to true unless explicitly set to false
+
+// Initialize Pyth Hermes client for real-time price data
+const pythClient = new HermesClient("https://hermes.pyth.network", {})
+
+// ETH/USD price ID from Pyth Network
+const ETH_USD_PRICE_ID = "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"
 
 // Agent B SDK instance for payment handling
+
+// const agentBSdk = new AckLabSdk({
+//   baseUrl: "https://api.ack-lab.com",
+//   clientId: process.env.CLIENT_ID_AGENT_B!,
+//   clientSecret: process.env.CLIENT_SECRET_AGENT_B!
+// })
+
 const agentBSdk = new AckLabSdk({
-  baseUrl: "https://api.ack-lab.com",
+  // baseUrl: "https://api.ack-lab.com",
   clientId: process.env.CLIENT_ID_AGENT_B!,
   clientSecret: process.env.CLIENT_SECRET_AGENT_B!
 })
@@ -24,10 +39,39 @@ const pendingSwaps = new Map<string, {
 }>()
 const completedSwaps = new Set<string>()
 
-// Mock function to get current exchange rate (USDC per ETH)
-function getCurrentExchangeRate(): number {
-  // Returns a rate between 3000 and 4000 USDC per ETH
-  return Math.floor(Math.random() * 1000) + 3000
+// Get current ETH/USD exchange rate from Pyth Network
+async function getCurrentExchangeRate(): Promise<number> {
+  try {
+    // Fetch the latest price update for ETH/USD
+    const priceUpdates = await pythClient.getLatestPriceUpdates([ETH_USD_PRICE_ID])
+    
+    if (priceUpdates && priceUpdates.parsed && priceUpdates.parsed.length > 0) {
+      const ethPriceData = priceUpdates.parsed[0]
+      
+      // Pyth returns price with an exponent, so we need to calculate the actual price
+      // price = ethPriceData.price.price * 10^ethPriceData.price.expo
+      const price = Number(ethPriceData.price.price) * Math.pow(10, ethPriceData.price.expo)
+      
+      logger.market('Fetched ETH/USD price from Pyth', {
+        'Price': `$${price.toFixed(2)}`,
+        'Confidence': `±$${(Number(ethPriceData.price.conf) * Math.pow(10, ethPriceData.price.expo)).toFixed(2)}`,
+        'Updated': new Date(ethPriceData.price.publish_time * 1000).toISOString()
+      })
+      
+      // Return the price rounded to 2 decimal places
+      // Since USDC is pegged to USD, ETH/USD price is effectively USDC/ETH
+      return Math.round(price * 100) / 100
+    }
+    
+    // Fallback if no price data is available
+    logger.warn('No price data available from Pyth, using fallback price')
+    return 3500 // Fallback price
+    
+  } catch (error) {
+    logger.error('Error fetching price from Pyth', error)
+    logger.info('Using fallback price of $3500')
+    return 3500 // Fallback price in case of error
+  }
 }
 
 // Mock function to execute the swap
@@ -38,10 +82,11 @@ async function executeSwapOnDex(usdcAmount: number, exchangeRate: number): Promi
 }> {
   // Simulate swap execution
   const ethAmount = usdcAmount / exchangeRate
-  console.log(`🔄 Executing swap on DEX...`)
-  console.log(`   USDC: ${usdcAmount}`)
-  console.log(`   Rate: ${exchangeRate} USDC/ETH`)
-  console.log(`   ETH: ${ethAmount.toFixed(6)}`)
+  logger.swap('Executing swap on DEX', {
+    'USDC Amount': usdcAmount,
+    'Exchange Rate': `${exchangeRate} USDC/ETH`,
+    'ETH Amount': ethAmount.toFixed(6)
+  })
   
   // Simulate processing time
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -58,7 +103,10 @@ async function sendEthToAgent(recipientAddress: string, ethAmount: number): Prom
   success: boolean;
   txHash: string;
 }> {
-  console.log(`💸 Sending ${ethAmount.toFixed(6)} ETH to ${recipientAddress}`)
+  logger.transaction('Sending ETH', {
+    'Amount': `${ethAmount.toFixed(6)} ETH`,
+    'Recipient': recipientAddress
+  })
   
   // Simulate transaction
   await new Promise(resolve => setTimeout(resolve, 500))
@@ -76,13 +124,13 @@ async function runAgentB(message: string) {
     
     When asked to swap USDC for ETH:
     1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
-    2. Return the EXACT paymentToken you receive (it will be a long string starting with "pay_")
+    2. Return the EXACT paymentToken you receive (it will be a long string)
     3. Tell the user the exchange rate and how much ETH they will receive
-    4. Once they confirm payment with a receipt ID, use the executeSwap tool
+    4. Once they confirm payment with a receipt ID, use the executeSwap tool. NO need to ask them for their ETH address if they already provided it.
     
     IMPORTANT: 
     - Always include the exact paymentToken in your response so the caller can pay
-    - The payment amount should be in smallest unit (100 USDC = 10000 units)
+    - The payment amount should be in cents (100 USDC = 10000 cents)
     - Show the exchange rate clearly to the user
     
     For any requests that are not about swapping USDC to ETH, say 'I can only swap USDC for ETH'.`,
@@ -95,10 +143,10 @@ async function runAgentB(message: string) {
           recipientAddress: z.string().describe("ETH address to receive the swapped ETH").optional()
         }),
         execute: async ({ usdcAmount }) => {
-          console.log(">>> Creating swap request for:", `${usdcAmount} USDC`)
+          logger.process('Creating swap request', { 'Amount': `${usdcAmount} USDC` })
           
-          // Get current exchange rate
-          const exchangeRate = getCurrentExchangeRate()
+          // Get current exchange rate from Pyth
+          const exchangeRate = await getCurrentExchangeRate()
           const ethAmount = usdcAmount / exchangeRate
           
           // Create payment request for USDC amount (100 USDC = 10000 units)
@@ -108,19 +156,21 @@ async function runAgentB(message: string) {
             `Swap ${usdcAmount} USDC for ${ethAmount.toFixed(6)} ETH`
           )
           
-          console.log(">>> Payment token generated:", paymentToken)
-          console.log(">>> Exchange rate:", `${exchangeRate} USDC/ETH`)
-          console.log(">>> Expected ETH:", `${ethAmount.toFixed(6)} ETH`)
+          logger.transaction('Payment token generated', {
+            'Token': paymentToken,
+            'Exchange rate': `${exchangeRate} USDC/ETH`,
+            'Expected ETH': `${ethAmount.toFixed(6)} ETH`
+          })
           
           // Decode and display JWT payload if flag is enabled
-          if (DECODE_JWT) {
+          if (DECODE_JWT && paymentToken) {
             const tokenParts = paymentToken.split('.')
             if (tokenParts.length === 3) {
               try {
                 const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
-                console.log(">>> Decoded JWT payload:", JSON.stringify(payload, null, 2))
-              } catch {
-                console.log(">>> Could not decode payment token as JWT")
+                logger.debug('Decoded payment token JWT payload', payload)
+              } catch (err) {
+                logger.warn('Could not decode payment token as JWT', String(err))
               }
             }
           }
@@ -201,8 +251,13 @@ async function runAgentB(message: string) {
 }
 
 // Agent A SDK instance
+// const agentASdk = new AckLabSdk({
+//   baseUrl: "https://api.ack-lab.com",
+//   clientId: process.env.CLIENT_ID_AGENT_A!,
+//   clientSecret: process.env.CLIENT_SECRET_AGENT_A!
+// })
+
 const agentASdk = new AckLabSdk({
-  baseUrl: "https://api.ack-lab.com",
   clientId: process.env.CLIENT_ID_AGENT_A!,
   clientSecret: process.env.CLIENT_SECRET_AGENT_A!
 })
@@ -222,11 +277,13 @@ async function runAgentA(message: string) {
     When you receive a payment request:
     1. Extract the EXACT paymentToken from the response (it will be a long string)
     2. Use the executePayment tool with that EXACT paymentToken
-    3. Send the payment receipt back to the Swap Agent to complete the swap
+    3. After successful payment, send the receiptId back to the Swap Agent with a message like: "Payment completed successfully. Receipt ID: [INSERT_RECEIPT_ID_HERE]. Payment token: [INSERT_PAYMENT_TOKEN_HERE]. Please proceed with sending ETH to ETH_ADDRESS_HERE."
     
     Your ETH address is: 0x742d35Cc6634C0532925a3b844Bc9e7595f
     
-    IMPORTANT: Always use the exact paymentToken provided by the Swap Agent.`,
+    IMPORTANT: 
+    - Always use the exact paymentToken provided by the Swap Agent
+    - Always include the receiptId from the payment result when confirming payment to the Swap Agent`,
     prompt: message,
     tools: {
       callSwapAgent: tool({
@@ -235,20 +292,20 @@ async function runAgentA(message: string) {
           message: z.string()
         }),
         execute: async ({ message }) => {
-          console.log(">>>> Calling swap agent:", message)
+          logger.agent('Calling swap agent', message)
           try {
             const response = await callAgent({ message })
-            console.log(">>>> Swap agent response:", response)
+            logger.agent('Swap agent response', response)
             
             // Try to extract payment token from response for debugging
             const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)
             if (paymentTokenMatch) {
-              console.log(">>>> Detected payment token:", paymentTokenMatch[0])
+              logger.debug('Detected payment token', paymentTokenMatch[0])
             }
             
             return response
           } catch (error) {
-            console.error(">>>> Error calling swap agent:", error)
+            logger.error('Error calling swap agent', error)
             return {
               error: true,
               message: error instanceof Error ? error.message : "Unknown error"
@@ -259,46 +316,63 @@ async function runAgentA(message: string) {
       executePayment: tool({
         description: "Execute a USDC payment using a payment token received from the Swap Agent",
         inputSchema: z.object({
-          paymentToken: z.string().describe("The exact payment token received from the Swap Agent (usually starts with 'pay_' and is a long string)")
+          paymentToken: z.string().describe("The exact payment token received from the Swap Agent")
         }),
         execute: async ({ paymentToken }) => {
-          console.log(">>>> Executing USDC payment for token:", paymentToken)
-          console.log("    Token length:", paymentToken.length)
-          console.log("    Token preview:", paymentToken.substring(0, 20) + "...")
+          logger.transaction('Executing USDC payment', {
+            'Token length': paymentToken.length,
+            'Token': paymentToken.length > 100 ? paymentToken.substring(0, 100) + '...' : paymentToken
+          })
           
           try {
             // Decode the payment token to see its contents if flag is enabled
-            if (DECODE_JWT) {
+            if (DECODE_JWT && paymentToken) {
               const tokenParts = paymentToken.split('.')
               if (tokenParts.length === 3) {
                 try {
                   const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
-                  console.log("    Decoded JWT payload:", JSON.stringify(payload, null, 2))
-                } catch {
-                  console.log("    Could not decode payment token as JWT")
+                  logger.debug('Payment token JWT payload (before execution)', payload)
+                } catch (err) {
+                  logger.warn('Could not decode payment token as JWT', String(err))
                 }
               }
             }
             
             const result = await agentASdk.executePayment(paymentToken)
-            console.log(">>>> Payment successful! Receipt ID:", result.receipt.id)
+            
+            // The receipt is a JWT string, not an object with an id property
+            const receiptJwt = result.receipt
+            logger.success('Payment successful!', `Receipt ID: ${receiptJwt}`)
+            
+            // Decode the receipt JWT to see its contents if flag is enabled
+            if (DECODE_JWT && receiptJwt) {
+              const tokenParts = receiptJwt.split('.')
+              if (tokenParts.length === 3) {
+                try {
+                  const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
+                  logger.debug('Payment receipt JWT payload', payload)
+                } catch (err) {
+                  logger.warn('Could not decode payment receipt as JWT', String(err))
+                }
+              }
+            }
             
             // The amount is returned as part of the result, not on the receipt itself
             const paidAmount = 100 * 100 // Default to expected amount for demo
-            console.log("    Payment confirmed")
+            logger.info('Payment confirmed')
             
             return {
               success: true,
-              receiptId: result.receipt.id,
+              receiptId: receiptJwt,
               amount: paidAmount,
               usdcPaid: paidAmount / 100,
               message: "USDC payment completed successfully"
             }
           } catch (error) {
-            console.error(">>>> Payment failed:", error)
+            logger.error('Payment failed', error)
             
             if (error instanceof Error) {
-              console.error("    Error message:", error.message)
+              logger.error('Error details', error.message)
             }
             
             const errorWithResponse = error as { response?: { data?: unknown } }
@@ -319,24 +393,29 @@ async function runAgentA(message: string) {
 }
 
 export function startAgentServers() {
+  logger.section('STARTING AGENT SERVERS')
+  
   // Start Agent A server on port 7576
   serveAgent({
     port: 7576,
-    runAgent: runAgentA
+    runAgent: runAgentA,
+    decodeJwt: DECODE_JWT
   })
 
   // Start Agent B server on port 7577
   serveAuthedAgent({
     port: 7577,
     runAgent: runAgentB,
-    sdk: agentBSdk
+    sdk: agentBSdk,
+    decodeJwt: DECODE_JWT
   })
 
-  console.log("✅ Agent servers started:")
-  console.log("   - Agent A (User): http://localhost:7576")
-  console.log("   - Agent B (Swap Service): http://localhost:7577")
-  console.log("")
-  console.log("The web UI can now communicate with these agents.")
+  logger.success('Agent servers started')
+  logger.server('Agent A (User)', 'http://localhost:7576')
+  logger.server('Agent B (Swap Service)', 'http://localhost:7577')
+  logger.raw('', 'after')
+  logger.info('The web UI can now communicate with these agents')
+  logger.separator()
 }
 
 // If this file is run directly, start the servers
