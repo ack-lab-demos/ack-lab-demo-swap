@@ -257,12 +257,14 @@ async function step5_TestHourlyLimit() {
   console.log(colors.cyan("\n📚 Step 5: Testing the Hourly Spend Limit"))
   console.log(colors.gray("━".repeat(50)))
   console.log(colors.white(`
-With the hourly spend limit of $60, a single 25 USDC swap should work fine.
-Let's test it!
+With the hourly spend limit of $60, let's do another 25 USDC swap.
+
+Remember: You already spent $25 in Step 1, so this will bring your
+total to $50 for this hour - still within your $60 limit!
 `))
 
   console.log(colors.green("➤ Try executing: ") + colors.white("swap 25 USDC for SOL"))
-  console.log(colors.gray("   This should work (within the $60/hour limit).\n"))
+  console.log(colors.gray("   This should work ($25 + $25 = $50, still under $60/hour limit).\n"))
 
   const userCommand = await input({
     message: colors.cyan("Enter command:")
@@ -274,9 +276,11 @@ Let's test it!
   if (result.success) {
     console.log(colors.green("\n✅ SUCCESS!"), result.message)
     console.log(colors.white(`
-Good! The first swap went through because it's within your $60/hour limit.
+Good! This swap went through because your total is still within the $60/hour limit.
 
-You've spent $25 out of your $60 hourly budget.
+Current hourly spending: $50 out of your $60 budget
+  • Step 1: $25 USDC
+  • Step 5: $25 USDC (this swap)
 `))
     return true
   } else {
@@ -290,42 +294,25 @@ async function step6_TriggerRateLimit() {
   console.log(colors.cyan("\n📚 Step 6: Triggering the Rate Limit"))
   console.log(colors.gray("━".repeat(50)))
   console.log(colors.white(`
-Now for the final test! You've already spent $25 this hour.
+Perfect! Let's review your spending so far:
+• Step 1: Spent $25 USDC
+• Step 5: Spent another $25 USDC
+• Total spent this hour: $50 out of your $60 limit
 
-Let's try swapping another 25 USDC. This would bring your total to $50.
-We'll then try a third swap to exceed the $60 limit.
+Now let's try ONE MORE swap. Since you've already spent $50, 
+another $25 swap would bring you to $75, which exceeds your 
+$60/hour limit. The system should block this!
 `))
 
-  console.log(colors.green("\n➤ Second swap - Try: ") + colors.white("swap 25 USDC for SOL"))
-  console.log(colors.gray("   This should still work ($50 total < $60 limit).\n"))
+  console.log(colors.green("\n➤ Final swap - Try: ") + colors.white("swap 25 USDC for SOL"))
+  console.log(colors.gray("   This should be BLOCKED ($50 + $25 = $75, exceeds $60/hour limit).\n"))
 
-  let userCommand = await input({
-    message: colors.cyan("Enter command for second swap:")
+  const userCommand = await input({
+    message: colors.cyan("Enter command to trigger the rate limit:")
   })
 
-  console.log(colors.yellow("\n⏳ Processing second swap..."))
-  let result = await executeSwap(userCommand)
-  
-  if (result.success) {
-    console.log(colors.green("\n✅ SUCCESS!"), result.message)
-    console.log(colors.white("   Total spent this hour: $50 / $60"))
-  } else {
-    console.log(colors.yellow("\n⚠️ Note:"), result.message)
-  }
-
-  console.log(colors.white(`
-Now let's try one more swap. This should exceed your $60/hour limit!
-`))
-
-  console.log(colors.green("\n➤ Third swap - Try: ") + colors.white("swap 25 USDC for SOL"))
-  console.log(colors.gray("   This should be BLOCKED (would exceed $60/hour limit).\n"))
-
-  userCommand = await input({
-    message: colors.cyan("Enter command for third swap:")
-  })
-
-  console.log(colors.yellow("\n⏳ Processing third swap..."))
-  result = await executeSwap(userCommand)
+  console.log(colors.yellow("\n⏳ Processing final swap..."))
+  const result = await executeSwap(userCommand)
   
   // Check for the specific error message for max spend limit
   if (!result.success && (
@@ -339,15 +326,16 @@ Now let's try one more swap. This should exceed your $60/hour limit!
     console.log(colors.white(`
 Excellent! The hourly spend limit protected you from excessive spending.
 
-You've successfully hit the rate limit after spending $50 within the hour.
-The system blocked the third swap to keep you within your $60/hour budget.
+You had already spent $50 within the hour ($25 + $25 from previous swaps).
+The system correctly blocked this swap that would have brought your total
+to $75, keeping you within your $60/hour budget.
 `))
     return true
   } else if (result.success) {
     console.log(colors.yellow("\n⚠️ Note:"), result.message)
     console.log(colors.white(`
-The swap succeeded. If you haven't hit the limit yet, try another swap.
-Remember, you need to exceed $60 total within the same hour.
+The swap succeeded. This shouldn't happen if you've correctly set the
+$60/hour limit and already spent $50. Please check your rule configuration.
 `))
     return false
   } else {

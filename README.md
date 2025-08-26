@@ -8,7 +8,7 @@
 
 A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (ACK), showcasing how autonomous AI agents can negotiate and execute USDC to SOL swaps with built-in authentication and payment processing.
 
-This demo showcases agent-to-agent communication using the ACK Hub SDK. It 
+This demo showcases agent-to-agent communication using the ACK Lab SDK. It 
 demonstrates how AI agents collaborate to execute cryptocurrency swaps, with 
 one agent (Agent A) representing a user who wants to swap USDC for SOL, and 
 another agent (Agent B) providing the swap service.

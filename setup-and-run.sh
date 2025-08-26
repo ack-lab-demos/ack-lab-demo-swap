@@ -127,7 +127,7 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
     print_color "$BLUE" "  - Agent B: Swap service agent that executes the exchange"
     echo ""
     print_color "$BLUE" "Get Anthropic API key from: https://console.anthropic.com/"
-    print_color "$BLUE" "Get ACK Lab credentials from: https://api.ack-lab.com"
+    print_color "$BLUE" "Get ACK Lab credentials from: https://ack-lab.catenalabs.com. For each agent, click on 'Create API Key' and copy the Client ID and Client Secret when prompted."
     echo ""
 
     for var in "${MISSING_VARS[@]}"; do
@@ -136,16 +136,16 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
                 print_color "$CYAN" "Enter your Anthropic API Key:"
                 ;;
             "CLIENT_ID_AGENT_A")
-                print_color "$CYAN" "Enter CLIENT_ID for Agent A (User):"
+                print_color "$CYAN" "Enter CLIENT_ID for Agent A (Swap Bot):"
                 ;;
             "CLIENT_SECRET_AGENT_A")
-                print_color "$CYAN" "Enter CLIENT_SECRET for Agent A (User):"
+                print_color "$CYAN" "Enter CLIENT_SECRET for Agent A (Executor Agent):"
                 ;;
             "CLIENT_ID_AGENT_B")
-                print_color "$CYAN" "Enter CLIENT_ID for Agent B (Swap Service):"
+                print_color "$CYAN" "Enter CLIENT_ID for Agent B (Swap Bot):"
                 ;;
             "CLIENT_SECRET_AGENT_B")
-                print_color "$CYAN" "Enter CLIENT_SECRET for Agent B (Swap Service):"
+                print_color "$CYAN" "Enter CLIENT_SECRET for Agent B (Executor Agent):"
                 ;;
         esac
         

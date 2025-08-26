@@ -119,15 +119,15 @@ async function runAgentB(message: string) {
     1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
     2. Return the payment token in a STRUCTURED format like this:
        
-       === PAYMENT TOKEN START ===
+       <payment_token>
        [INSERT_EXACT_PAYMENT_TOKEN_HERE]
-       === PAYMENT TOKEN END ===
+       </payment_token>
        
     3. Tell the user the exchange rate and how much SOL they will receive
     4. Once they confirm payment with a payment receipt (JWT string), use the executeSwap tool with that receipt. NO need to ask them for their SOL address if they already provided it.
     
     IMPORTANT: 
-    - ALWAYS wrap the payment token between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    - ALWAYS wrap the payment token between <payment_token> and </payment_token> markers
     - The payment receipt you receive should also be in a structured format (between markers)
     - Extract the ENTIRE content between the markers, including all characters
     - The payment receipt is a JWT that contains the payment token and other payment details
@@ -311,28 +311,28 @@ async function runAgentA(message: string) {
     
     The Swap Agent will:
     1. Give you an exchange rate and calculate how much SOL you'll receive
-    2. Provide a payment token in a structured format between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    2. Provide a payment token in a structured format between <payment_token> and </payment_token> markers
     3. Execute the swap and send you SOL after payment
     
     When you receive a payment request:
-    1. Look for the payment token between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    1. Look for the payment token between <payment_token> and </payment_token> markers
     2. Extract the ENTIRE content between these markers (it will be a long JWT string)
     3. Use the executePayment tool with that EXACT paymentToken
     4. After successful payment, send the receipt back in a STRUCTURED format:
        
        Payment completed successfully. 
        
-       === PAYMENT RECEIPT START ===
+       <payment_receipt>
        [INSERT_FULL_RECEIPT_JWT_HERE]
-       === PAYMENT RECEIPT END ===
+       </payment_receipt>
        
        Please proceed with sending SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
     
     Your Solana address is: 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
     
     IMPORTANT: 
-    - ALWAYS extract the payment token from between the === PAYMENT TOKEN START/END === markers
-    - ALWAYS send the receipt between === PAYMENT RECEIPT START/END === markers
+    - ALWAYS extract the payment token from between the <payment_token> and </payment_token> markers
+    - ALWAYS send the receipt between <payment_receipt> and </payment_receipt> markers
     - Include EVERY character of the tokens/receipts - they are long JWT strings
     - If the payment fails, do NOT try with a smaller amount
     - The payment receipt contains the payment token and proof of payment`,
