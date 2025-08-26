@@ -23,7 +23,7 @@ interface SwapStep {
 interface SwapData {
   usdcAmount: number;
   exchangeRate: number;
-  ethAmount: number;
+  solAmount: number;
   paymentToken?: string;
   receiptId?: string;
   swapTxHash?: string;
@@ -47,7 +47,7 @@ export function SwapInterface() {
     { id: 2, title: 'Generate Payment Request', status: 'pending' },
     { id: 3, title: 'Execute USDC Payment', status: 'pending' },
     { id: 4, title: 'Process Swap on DEX', status: 'pending' },
-    { id: 5, title: 'Send ETH to Wallet', status: 'pending' },
+    { id: 5, title: 'Send SOL to Wallet', status: 'pending' },
   ]);
   const [currentExchangeRate, setCurrentExchangeRate] = useState(0);
   const [priceConfidence, setPriceConfidence] = useState(0);
@@ -56,7 +56,7 @@ export function SwapInterface() {
   const [decodedJWT, setDecodedJWT] = useState<DecodedJWT | null>(null);
   const [copiedToken, setCopiedToken] = useState(false);
 
-  // Fetch real ETH/USD price from Pyth Network
+  // Fetch real SOL/USD price from Pyth Network
   useEffect(() => {
     const fetchPythPrice = async () => {
       try {
@@ -73,7 +73,7 @@ export function SwapInterface() {
       } catch {
         console.error('[UI] Error fetching Pyth price');
         // Use fallback price if fetch fails
-        setCurrentExchangeRate(3500);
+        setCurrentExchangeRate(150);
         setPriceSource('fallback');
       }
     };
@@ -98,7 +98,7 @@ export function SwapInterface() {
       { id: 2, title: 'Generate Payment Request', status: 'pending' },
       { id: 3, title: 'Execute USDC Payment', status: 'pending' },
       { id: 4, title: 'Process Swap on DEX', status: 'pending' },
-      { id: 5, title: 'Send ETH to Wallet', status: 'pending' },
+      { id: 5, title: 'Send SOL to Wallet', status: 'pending' },
     ]);
     setDecodedJWT(null);
     setCopiedToken(false);
@@ -187,7 +187,7 @@ export function SwapInterface() {
         message, 
         paymentToken, 
         exchangeRate, 
-        ethAmount, 
+        solAmount, 
         receiptId,
         swapTxHash,
         sendTxHash 
@@ -195,7 +195,7 @@ export function SwapInterface() {
       
       if (success) {
         // Update final step
-        updateStep(5, 'completed', `Sent ${ethAmount?.toFixed(6) || '~'} ETH`);
+        updateStep(5, 'completed', `Sent ${solAmount?.toFixed(6) || '~'} SOL`);
         
         // Decode JWT if we have a payment token
         if (paymentToken) {
@@ -207,14 +207,14 @@ export function SwapInterface() {
         setSwapData({
           usdcAmount,
           exchangeRate: exchangeRate || currentExchangeRate,
-          ethAmount: ethAmount || (usdcAmount / (exchangeRate || currentExchangeRate)),
+          solAmount: solAmount || (usdcAmount / (exchangeRate || currentExchangeRate)),
           paymentToken,
           receiptId,
           swapTxHash,
           sendTxHash
         });
         
-        toast.success(`Successfully swapped ${usdcAmount} USDC for ${ethAmount?.toFixed(6) || '~'} ETH!`);
+        toast.success(`Successfully swapped ${usdcAmount} USDC for ${solAmount?.toFixed(6) || '~'} SOL!`);
       } else {
         // Show the agent's message if swap wasn't successful
         toast.info(message || 'Swap process incomplete');
@@ -227,7 +227,7 @@ export function SwapInterface() {
           setSwapData({
             usdcAmount,
             exchangeRate: exchangeRate || currentExchangeRate,
-            ethAmount: ethAmount || (usdcAmount / (exchangeRate || currentExchangeRate)),
+            solAmount: solAmount || (usdcAmount / (exchangeRate || currentExchangeRate)),
             paymentToken
           });
         }
@@ -244,7 +244,7 @@ export function SwapInterface() {
     }
   };
 
-  const estimatedETH = amount && !isNaN(parseFloat(amount)) && currentExchangeRate > 0
+  const estimatedSOL = amount && !isNaN(parseFloat(amount)) && currentExchangeRate > 0
     ? (parseFloat(amount) / currentExchangeRate).toFixed(6)
     : '0.000000';
 
@@ -259,13 +259,13 @@ export function SwapInterface() {
         className="text-center space-y-2"
       >
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-          USDC to ETH Swap Demo
+          USDC to SOL Swap Demo
         </h1>
         <p className="text-gray-400">Educational demonstration of agent-to-agent communication</p>
         <div className="flex justify-center gap-4 mt-4">
           <Badge variant="outline" className="gap-1">
             <TrendingUp className="w-3 h-3" />
-            {priceSource === 'pyth' ? '🔮 Pyth' : 'Fallback'} Rate: {currentExchangeRate} USDC/ETH
+            {priceSource === 'pyth' ? '🔮 Pyth' : 'Fallback'} Rate: {currentExchangeRate} USDC/SOL
           </Badge>
           {priceConfidence > 0 && (
             <Badge variant="secondary" className="gap-1 text-xs">
@@ -292,7 +292,7 @@ export function SwapInterface() {
                 <ArrowDownUp className="w-5 h-5" />
                 Swap Interface
               </CardTitle>
-              <CardDescription>Exchange USDC for ETH using automated agents</CardDescription>
+              <CardDescription>Exchange USDC for SOL using automated agents</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -317,7 +317,7 @@ export function SwapInterface() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Exchange Rate {priceSource === 'pyth' && '(Pyth)'}</span>
                   <span className="font-mono">
-                    {currentExchangeRate} USDC/ETH
+                    {currentExchangeRate} USDC/SOL
                     {priceConfidence > 0 && (
                       <span className="text-xs text-gray-500 ml-1">±${priceConfidence.toFixed(2)}</span>
                     )}
@@ -326,7 +326,7 @@ export function SwapInterface() {
                 <div className="flex justify-between">
                   <span className="text-gray-400">You will receive</span>
                   <span className="text-xl font-bold text-green-400">
-                    ~{estimatedETH} ETH
+                    ~{estimatedSOL} SOL
                   </span>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export function SwapInterface() {
                 ) : (
                   <>
                     <Zap className="mr-2 h-4 w-4" />
-                    Swap USDC for ETH
+                    Swap USDC for SOL
                   </>
                 )}
               </Button>
@@ -449,7 +449,7 @@ export function SwapInterface() {
                     <AlertDescription>
                       This demo uses two AI agents powered by Claude Sonnet:
                       <ul className="mt-2 space-y-1 list-disc list-inside">
-                        <li>Agent A: The user agent that wants to swap USDC for ETH</li>
+                        <li>Agent A: The user agent that wants to swap USDC for SOL</li>
                         <li>Agent B: The swap service agent that handles the exchange</li>
                       </ul>
                     </AlertDescription>
@@ -458,7 +458,7 @@ export function SwapInterface() {
                   <div className="space-y-3 font-mono text-sm">
                     <div className="p-3 bg-gray-900/50 rounded">
                       <div className="text-blue-400">1. User → Agent A</div>
-                      <div className="text-gray-400 ml-4">"Swap 100 USDC for ETH"</div>
+                      <div className="text-gray-400 ml-4">"Swap 25 USDC for SOL"</div>
                     </div>
                     <div className="p-3 bg-gray-900/50 rounded">
                       <div className="text-green-400">2. Agent A → Agent B</div>
@@ -474,7 +474,7 @@ export function SwapInterface() {
                     </div>
                     <div className="p-3 bg-gray-900/50 rounded">
                       <div className="text-cyan-400">5. Agent B</div>
-                      <div className="text-gray-400 ml-4">Completes swap & sends ETH</div>
+                      <div className="text-gray-400 ml-4">Completes swap & sends SOL</div>
                     </div>
                   </div>
                 </div>
@@ -548,14 +548,14 @@ export function SwapInterface() {
                         <div className="font-mono text-lg">{swapData.usdcAmount} USDC</div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-gray-400">ETH Received</Label>
+                        <Label className="text-gray-400">SOL Received</Label>
                         <div className="font-mono text-lg text-green-400">
-                          {swapData.ethAmount.toFixed(6)} ETH
+                          {swapData.solAmount.toFixed(6)} SOL
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-gray-400">Exchange Rate (Pyth)</Label>
-                        <div className="font-mono">{swapData.exchangeRate} USDC/ETH</div>
+                        <div className="font-mono">{swapData.exchangeRate} USDC/SOL</div>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-gray-400">Receipt ID</Label>

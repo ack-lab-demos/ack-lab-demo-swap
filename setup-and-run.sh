@@ -12,7 +12,7 @@ print_color() {
     echo -e "${1}${2}${NC}"
 }
 
-print_color "$CYAN" "💱 USDC to ETH Swap Demo Setup"
+print_color "$CYAN" "💱 USDC to SOL Swap Demo Setup"
 print_color "$BLUE" "======================================="
 echo ""
 
@@ -123,7 +123,7 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
     print_color "$BLUE" "This demo requires:"
     print_color "$BLUE" "• Anthropic API Key for AI capabilities (claude-sonnet model)"
     print_color "$BLUE" "• ACK Lab SDK credentials for two agents:"
-    print_color "$BLUE" "  - Agent A: User agent wanting to swap USDC for ETH"
+    print_color "$BLUE" "  - Agent A: User agent wanting to swap USDC for SOL"
     print_color "$BLUE" "  - Agent B: Swap service agent that executes the exchange"
     echo ""
     print_color "$BLUE" "Get Anthropic API key from: https://console.anthropic.com/"
@@ -238,13 +238,13 @@ if [ "$FINAL_CHECK_FAILED" = true ]; then
 fi
 
 echo ""
-print_color "$BLUE" "🎯 Starting USDC to ETH Swap Agents Server..."
+print_color "$BLUE" "🎯 Starting USDC to SOL Swap Agents Server..."
 print_color "$YELLOW" "This will start two agent servers:"
 if [ "$ENVIRONMENT" = "replit" ]; then
-    print_color "$YELLOW" "• Agent A (User): Port 7576 (accessible via port 3000) - Wants to swap USDC for ETH"
+    print_color "$YELLOW" "• Agent A (User): Port 7576 (accessible via port 3000) - Wants to swap USDC for SOL"
     print_color "$YELLOW" "• Agent B (Swap Service): Port 7577 (accessible via port 3001) - Executes the swap using Pyth price feeds"
 else
-    print_color "$YELLOW" "• Agent A (User): Port 7576 - Wants to swap USDC for ETH"
+    print_color "$YELLOW" "• Agent A (User): Port 7576 - Wants to swap USDC for SOL"
     print_color "$YELLOW" "• Agent B (Swap Service): Port 7577 - Executes the swap using Pyth price feeds"
 fi
 echo ""
@@ -314,43 +314,66 @@ fi
 
 echo ""
 print_color "$BLUE" "💱 Swap Demo Features:"
-print_color "$CYAN" "  • Real-time ETH/USD pricing from Pyth Network"
+print_color "$CYAN" "  • Real-time SOL/USD pricing from Pyth Network"
 print_color "$CYAN" "  • USDC payments via ACK Lab SDK"
 print_color "$CYAN" "  • Simulated DEX swap execution"
-print_color "$CYAN" "  • ETH delivery to the wallet"
+print_color "$CYAN" "  • SOL delivery to the wallet"
 
 echo ""
 print_color "$BLUE" "🎮 Choose how to interact with the demo:"
-print_color "$GREEN" "  1. CLI Demo - Interactive command-line interface"
-print_color "$GREEN" "  2. Web UI - Visual web interface (requires additional setup)"
-print_color "$GREEN" "  3. Exit - Stop the demo"
+print_color "$GREEN" "  1. Tutorial - Interactive ACK-Lab rules tutorial (RECOMMENDED)"
+print_color "$GREEN" "  2. CLI Demo - Free-form command-line interface"
+print_color "$GREEN" "  3. Web UI - Visual web interface (requires additional setup)"
+print_color "$GREEN" "  4. Exit - Stop the demo"
 echo ""
 print_color "$YELLOW" "💡 Tip: You can force exit at any time with Ctrl+C"
 echo ""
 
 while true; do
-    read -p "$(print_color "$CYAN" "Enter your choice (1/2/3): ")" choice
+    read -p "$(print_color "$CYAN" "Enter your choice (1/2/3/4): ")" choice
     
     case $choice in
         1)
-            print_color "$GREEN" "\n🚀 Starting CLI Demo..."
-            print_color "$YELLOW" "You can request USDC to ETH swaps directly from the command line."
-            print_color "$YELLOW" "Example: 'swap 100 USDC for ETH'"
-            print_color "$YELLOW" "Type /exit to quit the CLI demo and return to this menu."
-            print_color "$CYAN" "Or use Ctrl+C to force exit the demo.\n"
+            print_color "$GREEN" "\n🎓 Starting Interactive Tutorial..."
+            print_color "$YELLOW" "This tutorial will guide you through ACK-Lab's rule system."
+            print_color "$YELLOW" "You'll learn how to protect your automated transactions with rules."
+            print_color "$CYAN" "Follow the step-by-step instructions to complete the tutorial.\n"
             
-            # Run the CLI demo
+            # Run the tutorial
             npx tsx cli-demos/swap-demo.ts
             
             echo ""
-            print_color "$BLUE" "CLI Demo finished. What would you like to do next?"
-            print_color "$GREEN" "  1. CLI Demo - Run again"
-            print_color "$GREEN" "  2. Web UI - Try the visual interface"
-            print_color "$GREEN" "  3. Exit - Stop the demo"
+            print_color "$BLUE" "Tutorial finished. What would you like to do next?"
+            print_color "$GREEN" "  1. Tutorial - Run again"
+            print_color "$GREEN" "  2. CLI Demo - Try free-form swaps"
+            print_color "$GREEN" "  3. Web UI - Try the visual interface"
+            print_color "$GREEN" "  4. Exit - Stop the demo"
             echo ""
             ;;
             
         2)
+            print_color "$GREEN" "\n🚀 Starting CLI Demo (Free-form mode)..."
+            print_color "$YELLOW" "You can request USDC to SOL swaps directly from the command line."
+            print_color "$YELLOW" "Example: 'swap 25 USDC for SOL'"
+            print_color "$YELLOW" "Type /exit to quit the CLI demo and return to this menu."
+            print_color "$CYAN" "Or use Ctrl+C to force exit the demo.\n"
+            
+            # For free-form mode, we need a way to skip the tutorial
+            # We can use an environment variable to signal this
+            export SKIP_TUTORIAL=true
+            npx tsx cli-demos/swap-demo.ts
+            unset SKIP_TUTORIAL
+            
+            echo ""
+            print_color "$BLUE" "CLI Demo finished. What would you like to do next?"
+            print_color "$GREEN" "  1. Tutorial - Learn about rules"
+            print_color "$GREEN" "  2. CLI Demo - Run again"
+            print_color "$GREEN" "  3. Web UI - Try the visual interface"
+            print_color "$GREEN" "  4. Exit - Stop the demo"
+            echo ""
+            ;;
+            
+        3)
             print_color "$GREEN" "\n🌐 Setting up Web UI..."
             
             # Check if web-ui directory exists
@@ -394,13 +417,14 @@ while true; do
             
             echo ""
             print_color "$BLUE" "Web UI stopped. What would you like to do next?"
-            print_color "$GREEN" "  1. CLI Demo - Try the command-line interface"
-            print_color "$GREEN" "  2. Web UI - Run again"
-            print_color "$GREEN" "  3. Exit - Stop the demo"
+            print_color "$GREEN" "  1. Tutorial - Learn about rules"
+            print_color "$GREEN" "  2. CLI Demo - Try the command-line interface"
+            print_color "$GREEN" "  3. Web UI - Run again"
+            print_color "$GREEN" "  4. Exit - Stop the demo"
             echo ""
             ;;
             
-        3)
+        4)
             print_color "$YELLOW" "\n👋 Shutting down..."
             
             # Kill the agents server
@@ -409,7 +433,7 @@ while true; do
                 print_color "$GREEN" "✅ Agent servers stopped"
             fi
             
-            print_color "$BLUE" "Thanks for trying the USDC to ETH Swap Demo!"
+            print_color "$BLUE" "Thanks for trying the USDC to SOL Swap Demo!"
             print_color "$CYAN" "\n📖 Quick Reference:"
             print_color "$CYAN" "  • Exit shortcut: Ctrl+C (works on all platforms: Windows/Linux/Mac)"
             print_color "$CYAN" "  • Restart demo: Run ./setup-and-run.sh again"
@@ -419,7 +443,7 @@ while true; do
             ;;
             
         *)
-            print_color "$RED" "Invalid choice. Please enter 1, 2, or 3."
+            print_color "$RED" "Invalid choice. Please enter 1, 2, 3, or 4."
             ;;
     esac
 done

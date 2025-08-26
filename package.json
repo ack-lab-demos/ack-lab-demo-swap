@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx cli-demos/swap-demo.ts",
+    "tutorial": "tsx cli-demos/swap-demo.ts",
+    "demo": "SKIP_TUTORIAL=true tsx cli-demos/swap-demo.ts",
     "dev": "tsx watch cli-demos/swap-demo.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
@@ -20,7 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ack-hub/sdk": "0.0.3-alpha.1",
+    "@ack-hub/sdk": "0.0.3-alpha.2",
     "@ai-sdk/anthropic": "^2.0.4",
     "@hono/node-server": "^1.18.2",
     "@hono/valibot-validator": "^0.5.3",

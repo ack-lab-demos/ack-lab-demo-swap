@@ -13,19 +13,12 @@ const DECODE_JWT = process.env.DECODE_JWT !== 'false' // Default to true unless 
 // Initialize Pyth Hermes client for real-time price data
 const pythClient = new HermesClient("https://hermes.pyth.network", {})
 
-// ETH/USD price ID from Pyth Network
-const ETH_USD_PRICE_ID = "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"
+// SOL/USD price ID from Pyth Network
+const SOL_USD_PRICE_ID = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
 
 // Agent B SDK instance for payment handling
-
-// const agentBSdk = new AckLabSdk({
-//   baseUrl: "https://api.ack-lab.com",
-//   clientId: process.env.CLIENT_ID_AGENT_B!,
-//   clientSecret: process.env.CLIENT_SECRET_AGENT_B!
-// })
-
 const agentBSdk = new AckLabSdk({
-  // baseUrl: "https://api.ack-lab.com",
+  baseUrl: "https://api.ack-lab.com",
   clientId: process.env.CLIENT_ID_AGENT_B!,
   clientSecret: process.env.CLIENT_SECRET_AGENT_B!
 })
@@ -34,58 +27,58 @@ const agentBSdk = new AckLabSdk({
 const pendingSwaps = new Map<string, { 
   usdcAmount: number; 
   paymentToken: string;
-  ethAmount: number;
+  solAmount: number;
   exchangeRate: number;
 }>()
 const completedSwaps = new Set<string>()
 
-// Get current ETH/USD exchange rate from Pyth Network
+// Get current SOL/USD exchange rate from Pyth Network
 async function getCurrentExchangeRate(): Promise<number> {
   try {
-    // Fetch the latest price update for ETH/USD
-    const priceUpdates = await pythClient.getLatestPriceUpdates([ETH_USD_PRICE_ID])
+    // Fetch the latest price update for SOL/USD
+    const priceUpdates = await pythClient.getLatestPriceUpdates([SOL_USD_PRICE_ID])
     
     if (priceUpdates && priceUpdates.parsed && priceUpdates.parsed.length > 0) {
-      const ethPriceData = priceUpdates.parsed[0]
+      const solPriceData = priceUpdates.parsed[0]
       
       // Pyth returns price with an exponent, so we need to calculate the actual price
-      // price = ethPriceData.price.price * 10^ethPriceData.price.expo
-      const price = Number(ethPriceData.price.price) * Math.pow(10, ethPriceData.price.expo)
+      // price = solPriceData.price.price * 10^solPriceData.price.expo
+      const price = Number(solPriceData.price.price) * Math.pow(10, solPriceData.price.expo)
       
-      logger.market('Fetched ETH/USD price from Pyth', {
+      logger.market('Fetched SOL/USD price from Pyth', {
         'Price': `$${price.toFixed(2)}`,
-        'Confidence': `±$${(Number(ethPriceData.price.conf) * Math.pow(10, ethPriceData.price.expo)).toFixed(2)}`,
-        'Updated': new Date(ethPriceData.price.publish_time * 1000).toISOString()
+        'Confidence': `±$${(Number(solPriceData.price.conf) * Math.pow(10, solPriceData.price.expo)).toFixed(2)}`,
+        'Updated': new Date(solPriceData.price.publish_time * 1000).toISOString()
       })
       
       // Return the price rounded to 2 decimal places
-      // Since USDC is pegged to USD, ETH/USD price is effectively USDC/ETH
+      // Since USDC is pegged to USD, SOL/USD price is effectively USDC/SOL
       return Math.round(price * 100) / 100
     }
     
     // Fallback if no price data is available
     logger.warn('No price data available from Pyth, using fallback price')
-    return 3500 // Fallback price
+    return 150 // Fallback price
     
   } catch (error) {
     logger.error('Error fetching price from Pyth', error)
-    logger.info('Using fallback price of $3500')
-    return 3500 // Fallback price in case of error
+    logger.info('Using fallback price of $150')
+    return 150 // Fallback price in case of error
   }
 }
 
 // Mock function to execute the swap
 async function executeSwapOnDex(usdcAmount: number, exchangeRate: number): Promise<{
   success: boolean;
-  ethReceived: number;
+  solReceived: number;
   txHash: string;
 }> {
   // Simulate swap execution
-  const ethAmount = usdcAmount / exchangeRate
+  const solAmount = usdcAmount / exchangeRate
   logger.swap('Executing swap on DEX', {
     'USDC Amount': usdcAmount,
-    'Exchange Rate': `${exchangeRate} USDC/ETH`,
-    'ETH Amount': ethAmount.toFixed(6)
+    'Exchange Rate': `${exchangeRate} USDC/SOL`,
+    'SOL Amount': solAmount.toFixed(6)
   })
   
   // Simulate processing time
@@ -93,18 +86,18 @@ async function executeSwapOnDex(usdcAmount: number, exchangeRate: number): Promi
   
   return {
     success: true,
-    ethReceived: ethAmount,
+    solReceived: solAmount,
     txHash: `0x${Math.random().toString(16).substring(2, 10)}...`
   }
 }
 
-// Mock function to send ETH to Agent A
-async function sendEthToAgent(recipientAddress: string, ethAmount: number): Promise<{
+// Mock function to send SOL to Agent A
+async function sendSolToAgent(recipientAddress: string, solAmount: number): Promise<{
   success: boolean;
   txHash: string;
 }> {
-  logger.transaction('Sending ETH', {
-    'Amount': `${ethAmount.toFixed(6)} ETH`,
+  logger.transaction('Sending SOL', {
+    'Amount': `${solAmount.toFixed(6)} SOL`,
     'Recipient': recipientAddress
   })
   
@@ -120,46 +113,54 @@ async function sendEthToAgent(recipientAddress: string, ethAmount: number): Prom
 async function runAgentB(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: `You are a swap agent that can exchange USDC for ETH. 
+    system: `You are a swap agent that can exchange USDC for SOL. 
     
-    When asked to swap USDC for ETH:
+    When asked to swap USDC for SOL:
     1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
-    2. Return the EXACT paymentToken you receive (it will be a long string)
-    3. Tell the user the exchange rate and how much ETH they will receive
-    4. Once they confirm payment with a receipt ID, use the executeSwap tool. NO need to ask them for their ETH address if they already provided it.
+    2. Return the payment token in a STRUCTURED format like this:
+       
+       === PAYMENT TOKEN START ===
+       [INSERT_EXACT_PAYMENT_TOKEN_HERE]
+       === PAYMENT TOKEN END ===
+       
+    3. Tell the user the exchange rate and how much SOL they will receive
+    4. Once they confirm payment with a payment receipt (JWT string), use the executeSwap tool with that receipt. NO need to ask them for their SOL address if they already provided it.
     
     IMPORTANT: 
-    - Always include the exact paymentToken in your response so the caller can pay
+    - ALWAYS wrap the payment token between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    - The payment receipt you receive should also be in a structured format (between markers)
+    - Extract the ENTIRE content between the markers, including all characters
+    - The payment receipt is a JWT that contains the payment token and other payment details
     - The payment amount should be in cents (100 USDC = 10000 cents)
     - Show the exchange rate clearly to the user
     
-    For any requests that are not about swapping USDC to ETH, say 'I can only swap USDC for ETH'.`,
+    For any requests that are not about swapping USDC to SOL, say 'I can only swap USDC for SOL'.`,
     prompt: message,
     tools: {
       createSwapRequest: tool({
-        description: "Create a payment request for the USDC to ETH swap",
+        description: "Create a payment request for the USDC to SOL swap",
         inputSchema: z.object({
           usdcAmount: z.number().describe("Amount of USDC to swap"),
-          recipientAddress: z.string().describe("ETH address to receive the swapped ETH").optional()
+          recipientAddress: z.string().describe("SOL address to receive the swapped SOL").optional()
         }),
         execute: async ({ usdcAmount }) => {
           logger.process('Creating swap request', { 'Amount': `${usdcAmount} USDC` })
           
           // Get current exchange rate from Pyth
           const exchangeRate = await getCurrentExchangeRate()
-          const ethAmount = usdcAmount / exchangeRate
+          const solAmount = usdcAmount / exchangeRate
           
           // Create payment request for USDC amount (100 USDC = 10000 units)
           const paymentUnits = usdcAmount * 100
           const { paymentToken } = await agentBSdk.createPaymentRequest(
             paymentUnits,
-            `Swap ${usdcAmount} USDC for ${ethAmount.toFixed(6)} ETH`
+            `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL`
           )
           
           logger.transaction('Payment token generated', {
             'Token': paymentToken,
-            'Exchange rate': `${exchangeRate} USDC/ETH`,
-            'Expected ETH': `${ethAmount.toFixed(6)} ETH`
+            'Exchange rate': `${exchangeRate} USDC/SOL`,
+            'Expected SOL': `${solAmount.toFixed(6)} SOL`
           })
           
           // Decode and display JWT payload if flag is enabled
@@ -179,7 +180,7 @@ async function runAgentB(message: string) {
           pendingSwaps.set(paymentToken, { 
             usdcAmount, 
             paymentToken,
-            ethAmount,
+            solAmount,
             exchangeRate
           })
           
@@ -187,9 +188,9 @@ async function runAgentB(message: string) {
             paymentToken,
             usdcAmount,
             exchangeRate,
-            ethAmount: ethAmount.toFixed(6),
+            solAmount: solAmount.toFixed(6),
             paymentRequired: paymentUnits,
-            description: `Swap ${usdcAmount} USDC for ~${ethAmount.toFixed(6)} ETH at rate ${exchangeRate} USDC/ETH`,
+            description: `Swap ${usdcAmount} USDC for ~${solAmount.toFixed(6)} SOL at rate ${exchangeRate} USDC/SOL`,
             instruction: `Please pay ${usdcAmount} USDC (${paymentUnits} units) using this token to proceed with the swap`
           }
         }
@@ -197,11 +198,55 @@ async function runAgentB(message: string) {
       executeSwap: tool({
         description: "Execute the swap after payment is confirmed",
         inputSchema: z.object({
-          paymentToken: z.string().describe("The payment token that was paid"),
-          receiptId: z.string().describe("The receipt ID from the payment"),
-          recipientAddress: z.string().describe("ETH address to send the swapped ETH").optional()
+          paymentReceipt: z.string().describe("The payment receipt JWT from the payment"),
+          recipientAddress: z.string().describe("SOL address to send the swapped SOL").optional()
         }),
-        execute: async ({ paymentToken, receiptId, recipientAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f" }) => {
+        execute: async ({ paymentReceipt, recipientAddress = "7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp" }) => {
+          // Extract receipt from structured format if it's wrapped in markers
+          let actualReceipt = paymentReceipt;
+          
+          // Check if receipt is in structured format
+          const structuredMatch = paymentReceipt.match(/===\s*PAYMENT RECEIPT START\s*===\s*([\s\S]*?)\s*===\s*PAYMENT RECEIPT END\s*===/);
+          if (structuredMatch) {
+            actualReceipt = structuredMatch[1].trim();
+            logger.debug('Extracted receipt from structured format', { length: actualReceipt.length })
+          }
+          
+          // Decode the payment receipt JWT to extract the payment token
+          let paymentToken: string;
+          let receiptId: string | undefined;
+          
+          try {
+            const receiptParts = actualReceipt.split('.')
+            if (receiptParts.length !== 3) {
+              return { error: "Invalid payment receipt format" }
+            }
+            
+            const payload = JSON.parse(Buffer.from(actualReceipt.split('.')[1], 'base64').toString())
+            
+            // Extract payment token from the receipt's credentialSubject
+            paymentToken = payload.vc?.credentialSubject?.paymentToken
+            if (!paymentToken) {
+              return { error: "Payment token not found in receipt" }
+            }
+            
+            // Extract receipt ID (jti field in the JWT)
+            receiptId = payload.jti
+            
+            // Log decoded receipt if debugging is enabled
+            if (DECODE_JWT) {
+              logger.debug('Decoded payment receipt', {
+                paymentToken: paymentToken.substring(0, 50) + '...',
+                receiptId,
+                subject: payload.sub,
+                issuer: payload.iss
+              })
+            }
+          } catch (err) {
+            logger.error('Failed to decode payment receipt', String(err))
+            return { error: "Failed to decode payment receipt" }
+          }
+          
           // Check if this payment token exists and hasn't been used
           const pendingSwap = pendingSwaps.get(paymentToken)
           if (!pendingSwap) {
@@ -220,11 +265,11 @@ async function runAgentB(message: string) {
             return { error: "Swap execution failed" }
           }
           
-          // Send ETH to recipient
-          const sendResult = await sendEthToAgent(recipientAddress, swapResult.ethReceived)
+          // Send SOL to recipient
+          const sendResult = await sendSolToAgent(recipientAddress, swapResult.solReceived)
           
           if (!sendResult.success) {
-            return { error: "Failed to send ETH" }
+            return { error: "Failed to send SOL" }
           }
           
           // Mark swap as completed
@@ -234,7 +279,7 @@ async function runAgentB(message: string) {
           return {
             success: true,
             usdcSwapped: pendingSwap.usdcAmount,
-            ethReceived: swapResult.ethReceived.toFixed(6),
+            solReceived: swapResult.solReceived.toFixed(6),
             exchangeRate: pendingSwap.exchangeRate,
             recipientAddress,
             swapTxHash: swapResult.txHash,
@@ -251,13 +296,8 @@ async function runAgentB(message: string) {
 }
 
 // Agent A SDK instance
-// const agentASdk = new AckLabSdk({
-//   baseUrl: "https://api.ack-lab.com",
-//   clientId: process.env.CLIENT_ID_AGENT_A!,
-//   clientSecret: process.env.CLIENT_SECRET_AGENT_A!
-// })
-
 const agentASdk = new AckLabSdk({
+  baseUrl: "https://api.ack-lab.com",
   clientId: process.env.CLIENT_ID_AGENT_A!,
   clientSecret: process.env.CLIENT_SECRET_AGENT_A!
 })
@@ -267,27 +307,39 @@ const callAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
 async function runAgentA(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: `You are a user who wants to swap USDC for ETH. You have USDC and want to exchange it for ETH using the Swap Agent.
+    system: `You are a user who wants to swap USDC for SOL. You have USDC and want to exchange it for SOL using the Swap Agent.
     
     The Swap Agent will:
-    1. Give you an exchange rate and calculate how much ETH you'll receive
-    2. Provide a payment token for the USDC amount
-    3. Execute the swap and send you ETH after payment
+    1. Give you an exchange rate and calculate how much SOL you'll receive
+    2. Provide a payment token in a structured format between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    3. Execute the swap and send you SOL after payment
     
     When you receive a payment request:
-    1. Extract the EXACT paymentToken from the response (it will be a long string)
-    2. Use the executePayment tool with that EXACT paymentToken
-    3. After successful payment, send the receiptId back to the Swap Agent with a message like: "Payment completed successfully. Receipt ID: [INSERT_RECEIPT_ID_HERE]. Payment token: [INSERT_PAYMENT_TOKEN_HERE]. Please proceed with sending ETH to ETH_ADDRESS_HERE."
+    1. Look for the payment token between === PAYMENT TOKEN START === and === PAYMENT TOKEN END === markers
+    2. Extract the ENTIRE content between these markers (it will be a long JWT string)
+    3. Use the executePayment tool with that EXACT paymentToken
+    4. After successful payment, send the receipt back in a STRUCTURED format:
+       
+       Payment completed successfully. 
+       
+       === PAYMENT RECEIPT START ===
+       [INSERT_FULL_RECEIPT_JWT_HERE]
+       === PAYMENT RECEIPT END ===
+       
+       Please proceed with sending SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
     
-    Your ETH address is: 0x742d35Cc6634C0532925a3b844Bc9e7595f
+    Your Solana address is: 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
     
     IMPORTANT: 
-    - Always use the exact paymentToken provided by the Swap Agent
-    - Always include the receiptId from the payment result when confirming payment to the Swap Agent`,
+    - ALWAYS extract the payment token from between the === PAYMENT TOKEN START/END === markers
+    - ALWAYS send the receipt between === PAYMENT RECEIPT START/END === markers
+    - Include EVERY character of the tokens/receipts - they are long JWT strings
+    - If the payment fails, do NOT try with a smaller amount
+    - The payment receipt contains the payment token and proof of payment`,
     prompt: message,
     tools: {
       callSwapAgent: tool({
-        description: "Call the Swap Agent to exchange USDC for ETH",
+        description: "Call the Swap Agent to exchange USDC for SOL",
         inputSchema: z.object({
           message: z.string()
         }),
@@ -363,7 +415,8 @@ async function runAgentA(message: string) {
             
             return {
               success: true,
-              receiptId: receiptJwt,
+              receipt: receiptJwt,  // Return the full receipt JWT
+              receiptId: receiptJwt,  // Keep for backward compatibility
               amount: paidAmount,
               usdcPaid: paidAmount / 100,
               message: "USDC payment completed successfully"

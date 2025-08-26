@@ -1,16 +1,16 @@
-# ACK USDC to ETH Swap Demo
+# ACK USDC to SOL Swap Demo
 
-![Agent Commerce Kit](https://github.com/agentcommercekit/ack/raw/main/assets/readme-hero.png)
+![Agent Commerce Kit](./assets/README-Header.png)
 
 [![Run on Replit](https://replit.com/badge?caption=Run%20on%20Replit)](https://replit.new/github.com/catena-labs/ack-swap-demo)
 
 [Explore ACK-Lab Developer Preview](https://ack-lab.catenalabs.com)
 
-A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (ACK), showcasing how autonomous AI agents can negotiate and execute USDC to ETH swaps with built-in authentication and payment processing.
+A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (ACK), showcasing how autonomous AI agents can negotiate and execute USDC to SOL swaps with built-in authentication and payment processing.
 
 This demo showcases agent-to-agent communication using the ACK Hub SDK. It 
 demonstrates how AI agents collaborate to execute cryptocurrency swaps, with 
-one agent (Agent A) representing a user who wants to swap USDC for ETH, and 
+one agent (Agent A) representing a user who wants to swap USDC for SOL, and 
 another agent (Agent B) providing the swap service.
 
 
@@ -77,6 +77,28 @@ The `@ack-hub/sdk` npm package abstracts the complexity of credential exchange a
 - **Agent Communication**: `createAgentCaller()` method for establishing secure agent-to-agent connections
 - **Transaction Safety**: Ensures atomicity and reliability of financial operations
 
+## 📚 Interactive Tutorial Mode
+
+The swap demo includes an **educational onboarding guide** that teaches developers how to use ACK-Lab's powerful rule system through hands-on experience:
+
+### Tutorial Flow
+
+1. **Step 1: Initial Swap** - Execute a successful 25 USDC to SOL swap with no restrictions
+2. **Step 2: Transaction Limits** - Learn to set a $10 maximum transaction size rule in ACK-Lab
+3. **Step 3: Rule Enforcement** - See how the same swap is now blocked by your rule
+4. **Step 4: Rate Limiting** - Replace the size limit with a $60/hour spend limit
+5. **Step 5: Testing Limits** - Execute swaps within the hourly budget
+6. **Step 6: Hit Rate Limit** - Experience rate limiting protection in action
+
+### Educational Benefits
+
+- **Learn by Doing**: Set real rules and see immediate effects
+- **Understand Protection**: See how rules protect against accidents and attacks
+- **No Code Changes**: Rules operate at the infrastructure level
+- **Full Control**: Learn to modify and remove rules based on needs
+
+The tutorial guides you through each step, automatically detecting rule violations and providing educational context about how ACK-Lab's rules protect your automated transactions.
+
 ## 🏗️ Architecture & Agent Communication
 
 ### Agent Server Architecture
@@ -87,7 +109,7 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
                                           ┌─────────────────┐
                                           │  Pyth Network   │
                                           │ (Price Oracle)  │
-                                          │ • ETH/USD rates │
+                                          │ • SOL/USD rates │
                                           └────────┬────────┘
                                                    │
 ┌─────────────────┐                      ┌────────▼────────┐
@@ -130,10 +152,10 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
    - Response verification
 
 4. **Payment Flow**: When agents agree on a swap:
-   - Agent B fetches real-time ETH/USD price from Pyth Network
+   - Agent B fetches real-time SOL/USD price from Pyth Network
    - Agent B generates a payment token via ACK-Pay
    - Agent A validates and processes the payment
-   - Agent B executes the swap and sends ETH upon payment confirmation
+   - Agent B executes the swap and sends SOL upon payment confirmation
 
 ## 🚀 Running on Replit (Primary Method)
 
@@ -203,6 +225,21 @@ For local development and testing:
    ./setup-and-run.sh
    ```
 
+### Quick Start Options
+
+You can also run specific modes directly:
+
+```bash
+# Run the interactive tutorial (recommended)
+npm run tutorial
+
+# Run free-form CLI demo
+npm run demo
+
+# Start agent servers only
+npm run agents:start
+```
+
 ### Local Access Points
 - Agent A: `http://localhost:7576`
 - Agent B: `http://localhost:7577`
@@ -237,7 +274,8 @@ This command:
 - Handles graceful degradation if servers are slow to start
 
 ### 5. Interactive Menu System
-- **CLI Demo**: Direct command-line interaction with agents
+- **Tutorial Mode**: Step-by-step ACK-Lab rules tutorial (recommended for first-time users)
+- **CLI Demo**: Free-form command-line interaction with agents
 - **Web UI**: Visual interface for monitoring swap execution
 - **Exit**: Graceful shutdown of all services
 
@@ -246,22 +284,22 @@ This command:
 The demo simulates a cryptocurrency swap service where:
 
 ### Agent A (User)
-- Represents a user wanting to swap USDC for ETH
-- Manages wallet address (0x742d35Cc6634C0532925a3b844Bc9e7595f)
+- Represents a user wanting to swap USDC for SOL
+- Manages wallet address (7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp)
 - Executes payments using ACK-Pay
 - Confirms transaction receipts
 
 ### Agent B (Swap Service)
-- Fetches real-time ETH/USD prices from Pyth Network
+- Fetches real-time SOL/USD prices from Pyth Network
 - Creates payment requests for exact USDC amounts
 - Simulates DEX swap execution
-- Sends ETH to user's wallet upon payment confirmation
+- Sends SOL to user's wallet upon payment confirmation
 
 ### Price Oracle Integration
-- **Pyth Network**: Provides real-time ETH/USD price feeds
+- **Pyth Network**: Provides real-time SOL/USD price feeds
 - **Price Updates**: Fetched on-demand for each swap request
 - **Confidence Intervals**: Displays price confidence data
-- **Fallback Pricing**: Uses $3500 if oracle is unavailable
+- **Fallback Pricing**: Uses $150 if oracle is unavailable
 
 ## 🔑 Security Features
 
@@ -298,30 +336,30 @@ serveAuthedAgent({
 - **Response**: Structured JSON with transaction details
 
 ### Swap Execution Flow
-1. **Rate Discovery**: Fetch current ETH/USD from Pyth Network
+1. **Rate Discovery**: Fetch current SOL/USD from Pyth Network
 2. **Payment Request**: Generate JWT token with swap details
 3. **Payment Processing**: Execute USDC payment via ACK-Pay
 4. **Swap Simulation**: Process swap on mock DEX
-5. **ETH Delivery**: Transfer ETH to user's wallet
+5. **SOL Delivery**: Transfer SOL to user's wallet
 6. **Confirmation**: Return transaction hashes and receipt
 
 ## 💬 Example Usage
 
 ### CLI Interaction
 ```
-=== USDC to ETH Swap Demo (CLI) ===
+=== USDC to SOL Swap Demo (CLI) ===
 ✅ Agents are running and ready!
 
-Enter your request: swap 100 USDC for ETH
+Enter your request: swap 25 USDC for SOL
 
->>> Processing request: swap 100 USDC for ETH
+>>> Processing request: swap 25 USDC for SOL
 
-📊 Fetched ETH/USD price from Pyth: $3542.50
-   Price confidence: ±$2.30
+📊 Fetched SOL/USD price from Pyth: $150.50
+   Price confidence: ±$0.30
    Publish time: 2024-01-15T10:30:45.000Z
 
-Current exchange rate: 3542.50 USDC/ETH
-You will receive: 0.028234 ETH
+Current exchange rate: 150.50 USDC/SOL
+You will receive: 0.664452 SOL
 
 Payment request created for 100 USDC (10000 units)
 Payment token: pay_abc123xyz...
@@ -331,10 +369,10 @@ Executing payment...
 
 🔄 Executing swap on DEX...
    USDC: 100
-   Rate: 3542.50 USDC/ETH
-   ETH: 0.028234
+   Rate: 150.50 USDC/SOL
+   SOL: 0.664452
 
-💸 Sending 0.028234 ETH to 0x742d35Cc6634C0532925a3b844Bc9e7595f
+💸 Sending 0.664452 SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
 
 Swap completed successfully!
 - Swap TX: 0x7f8a9b2c...
