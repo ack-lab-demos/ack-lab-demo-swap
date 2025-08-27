@@ -270,7 +270,7 @@ install_web_ui_dependencies() {
 # ==================== Service Management ====================
 start_agent_servers() {
     print_success "Starting agent servers..."
-    npx tsx swap-agents-server.ts &
+    npx tsx swap-agents-server.ts 1>&2 &
     echo $!
 }
 
