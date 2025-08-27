@@ -3,7 +3,7 @@ import { generateText, stepCountIs, tool } from "ai"
 import { serveAgent, serveAuthedAgent } from "./serve-agent"
 import { anthropic } from "@ai-sdk/anthropic"
 import { z } from "zod"
-import { AckLabSdk } from "@ack-hub/sdk"
+import { AckLabSdk } from "@ack-lab/sdk"
 import { HermesClient } from "@pythnetwork/hermes-client"
 import { logger } from "./logger"
 

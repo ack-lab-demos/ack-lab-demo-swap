@@ -71,7 +71,7 @@ This demo leverages the **Agent Commerce Kit (ACK)** to enable secure, robust tr
 - **Settlement**: Handles the financial settlement between agent wallets
 
 ### ack-lab SDK
-The `@ack-hub/sdk` npm package abstracts the complexity of credential exchange and payment processing, providing:
+The `@ack-lab/sdk` npm package abstracts the complexity of credential exchange and payment processing, providing:
 - **Simple API Interface**: Clean methods for agent authentication and payment operations
 - **Built-in Security**: Automatic handling of JWT tokens, signatures, and encryption
 - **Agent Communication**: `createAgentCaller()` method for establishing secure agent-to-agent connections
@@ -200,8 +200,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
 For local development and testing:
 
 ### Prerequisites
-- Node.js 18+
-- npm or pnpm
+- Node.js 18+ with npm
 
 ### Setup
 
@@ -255,7 +254,7 @@ The `setup-and-run.sh` script orchestrates the entire demo environment:
 - Validates all five required environment variables
 
 ### 2. Dependency Management
-- Installs root dependencies via npm/pnpm
+- Installs root dependencies via npm
 - Conditionally installs web UI dependencies
 - Detects and uses appropriate package manager
 
