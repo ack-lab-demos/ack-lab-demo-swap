@@ -234,8 +234,6 @@ install_dependencies() {
         
         npm install
         
-        fi
-        
         if [ $? -eq 0 ]; then
             print_success "Root dependencies installed successfully"
         else
