@@ -93,6 +93,29 @@ get_port_for_environment() {
 ensure_env_file() {
     local needs_update=false
     
+    # On Replit, we use Secrets for sensitive data
+    # .env is only for non-sensitive runtime settings
+    if [ -n "$REPLIT_DEV_DOMAIN" ]; then
+        if [ ! -f ".env" ]; then
+            print_info "Creating .env file for runtime settings (non-sensitive)..."
+            echo "DECODE_JWT=true" > .env
+            echo "NODE_NO_WARNINGS=1" >> .env
+            echo "# Note: Use Replit Secrets for sensitive credentials!" >> .env
+            echo "# Do NOT put API keys or secrets in this file on Replit." >> .env
+            print_success ".env file created with runtime settings"
+        else
+            # Ensure runtime settings are present but don't touch secrets
+            if ! grep -q "^DECODE_JWT=" .env 2>/dev/null; then
+                echo "DECODE_JWT=true" >> .env
+            fi
+            if ! grep -q "^NODE_NO_WARNINGS=" .env 2>/dev/null; then
+                echo "NODE_NO_WARNINGS=1" >> .env
+            fi
+        fi
+        return
+    fi
+    
+    # Local environment - normal .env handling
     if [ ! -f ".env" ]; then
         print_warning "Creating .env file..."
         echo "DECODE_JWT=true" > .env
@@ -138,8 +161,16 @@ load_env() {
 get_missing_vars() {
     local missing=()
     for var in "${REQUIRED_VARS[@]}"; do
-        if [ -z "${!var}" ] && ! grep -q "^${var}=" .env 2>/dev/null; then
-            missing+=("$var")
+        # On Replit, only check environment variables (from Secrets)
+        # On local, check both environment and .env file
+        if [ -n "$REPLIT_DEV_DOMAIN" ]; then
+            if [ -z "${!var}" ]; then
+                missing+=("$var")
+            fi
+        else
+            if [ -z "${!var}" ] && ! grep -q "^${var}=" .env 2>/dev/null; then
+                missing+=("$var")
+            fi
         fi
     done
     echo "${missing[@]}"
@@ -187,36 +218,90 @@ prompt_for_credentials() {
     print_info "For each agent, click 'Create API Key' and copy the credentials when prompted."
     echo ""
     
-    for var in "${missing_vars[@]}"; do
-        local prompt=$(get_credential_prompt "$var")
-        print_color "$CYAN" "$prompt"
-        read -p "> " value
-        
-        if [ -n "$value" ]; then
-            if grep -q "^${var}=" .env 2>/dev/null; then
-                sed -i.bak "s|^${var}=.*|${var}=${value}|" .env && rm .env.bak
-            else
-                echo "${var}=${value}" >> .env
-            fi
-            print_success "${var} saved to .env"
-        else
-            print_error "${var} is required for the demo to work!"
-            print_warning "You can add it manually to the .env file later."
-        fi
+    # Check if we're on Replit
+    if [ -n "$REPLIT_DEV_DOMAIN" ]; then
+        print_color "$YELLOW" "🔐 You're running on Replit - Use the Secrets tool for secure storage!"
         echo ""
-    done
-    
-    # Reload environment after updates
-    load_env
+        print_info "To add credentials securely on Replit:"
+        print_success "1. Click the 🔒 'Secrets' icon in the Tools panel (left sidebar)"
+        print_success "2. Add each of the following secrets with their exact names:"
+        echo ""
+        
+        for var in "${missing_vars[@]}"; do
+            print_color "$CYAN" "   • ${var}"
+            case $var in
+                "ANTHROPIC_API_KEY")
+                    print_info "     Your Anthropic API key from https://console.anthropic.com/"
+                    ;;
+                "CLIENT_ID_AGENT_A")
+                    print_info "     Client ID for Agent A (User/Swap Bot)"
+                    ;;
+                "CLIENT_SECRET_AGENT_A")
+                    print_info "     Client Secret for Agent A (User/Swap Bot)"
+                    ;;
+                "CLIENT_ID_AGENT_B")
+                    print_info "     Client ID for Agent B (Executor Agent)"
+                    ;;
+                "CLIENT_SECRET_AGENT_B")
+                    print_info "     Client Secret for Agent B (Executor Agent)"
+                    ;;
+            esac
+            echo ""
+        done
+        
+        print_warning "⚠️  IMPORTANT: Do NOT use .env file on public Replit projects!"
+        print_warning "Public Replit projects expose all files, including .env"
+        print_warning "The Secrets tool keeps your credentials secure and private"
+        echo ""
+        print_info "After adding all secrets, run this script again to continue."
+        print_info "Press Enter to exit and add your secrets..."
+        read -p ""
+        exit 0
+    else
+        # Local environment - use .env file
+        for var in "${missing_vars[@]}"; do
+            local prompt=$(get_credential_prompt "$var")
+            print_color "$CYAN" "$prompt"
+            read -p "> " value
+            
+            if [ -n "$value" ]; then
+                if grep -q "^${var}=" .env 2>/dev/null; then
+                    sed -i.bak "s|^${var}=.*|${var}=${value}|" .env && rm .env.bak
+                else
+                    echo "${var}=${value}" >> .env
+                fi
+                print_success "${var} saved to .env"
+            else
+                print_error "${var} is required for the demo to work!"
+                print_warning "You can add it manually to the .env file later."
+            fi
+            echo ""
+        done
+        
+        # Reload environment after updates
+        load_env
+    fi
 }
 
 validate_credentials() {
+    local has_missing=false
     for var in "${REQUIRED_VARS[@]}"; do
         if [ -z "${!var}" ]; then
             print_error "${var} is still not set!"
-            return 1
+            has_missing=true
         fi
     done
+    
+    if [ "$has_missing" = true ]; then
+        if [ -n "$REPLIT_DEV_DOMAIN" ]; then
+            echo ""
+            print_warning "📝 Reminder for Replit users:"
+            print_info "Use the 🔒 Secrets tool in the Tools panel to add missing credentials"
+            print_info "Do NOT add them to the .env file on public Replit projects!"
+        fi
+        return 1
+    fi
+    
     return 0
 }
 
@@ -428,7 +513,12 @@ main() {
     # Validate all credentials are set
     if ! validate_credentials; then
         print_error "Cannot start demo without all required credentials."
-        print_warning "Please add the missing credentials to your .env file and run this script again."
+        if [ -n "$REPLIT_DEV_DOMAIN" ]; then
+            print_warning "Please add the missing credentials using the Replit Secrets tool and run this script again."
+            print_info "Click the 🔒 Secrets icon in the Tools panel to add your credentials securely."
+        else
+            print_warning "Please add the missing credentials to your .env file and run this script again."
+        fi
         exit 1
     fi
     

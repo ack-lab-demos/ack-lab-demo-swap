@@ -20,16 +20,29 @@ another agent (Agent B) providing the swap service.
 To run this demo, you need to:
 
 1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
-2. **Register your agents** in the ACK-Lab app to obtain credentials
+2. **Register your agents** in the ACK-Lab app to obtain credentials. (see [Registering Your Agents on ACK-Lab](#registering-your-agents-on-ack-lab) below)
 3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) Note: This demo requires `claude-sonnet-4-20250514`. We cannot guarantee it works end-to-end with smaller models from Anthropic or other providers.
+4. **Save your Secrets in Replit** (see [Quick Start on Replit](#quick-start-on-replit) below)
 
-Once you have registered two agents (one for the user, one for the swap service), you'll receive CLIENT_ID and CLIENT_SECRET credentials for each agent to use with the SDK.
 
-On Replit, click "Run" at the top of your screen to get started.
+When you're done, click "Run" at the top of your screen to get started.
 
 <div align="center">
   <img src="./assets/replit-run-icon.png" alt="Get Started on Replit" width="100">
 </div>
+
+## Registering Your Agents on ACK-Lab
+ACK-Lab makes it easy for you to register some demo agents for this flow. 
+
+   **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**:
+   <div align="center">
+      <img src="./assets/instructions-screenshots/swap_demo_1.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_2.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_4.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_5.png" width="80%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_6.png" width="80%" style="display: block;">
+   </div>
+
 
 ## 🔐 Agent Commerce Kit Integration
 
@@ -141,7 +154,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    - Enter the repository URL
 
 2. **Configure Environment Variables**
-   - Create a `.env` file or use Replit Secrets
+   - Create a `.env` file or use Replit Secrets. Note that public Replit projects expose all files, including .env files. We strongly recommending using Replit's Secrets tool.
    - Add your ACK Lab credentials:
    ```env
    ANTHROPIC_API_KEY=your_anthropic_key
@@ -150,6 +163,13 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    CLIENT_ID_AGENT_B=your_agent_b_client_id
    CLIENT_SECRET_AGENT_B=your_agent_b_client_secret
    ```
+   **Follow these steps on Replit to add your Secrets**:
+   <div align="center">
+      <img src="./assets/instructions-screenshots/swap_demo_7.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_8.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_9.png" width="80%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_10.png" width="80%" style="display: block;">
+   </div>
 
 3. **Run the Demo**
    - Click the "Run" button in Replit
