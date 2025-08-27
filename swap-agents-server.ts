@@ -7,81 +7,130 @@ import { AckLabSdk } from "@ack-hub/sdk"
 import { HermesClient } from "@pythnetwork/hermes-client"
 import { logger } from "./logger"
 
-// Configuration flag to decode and display JWT payloads
-const DECODE_JWT = process.env.DECODE_JWT !== 'false' // Default to true unless explicitly set to false
+// ==================== Configuration ====================
+const DECODE_JWT = process.env.DECODE_JWT !== 'false'
+const SOL_USD_PRICE_ID = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+const FALLBACK_SOL_PRICE = 150
 
-// Initialize Pyth Hermes client for real-time price data
+// ==================== SDK Initialization ====================
 const pythClient = new HermesClient("https://hermes.pyth.network", {})
 
-// SOL/USD price ID from Pyth Network
-const SOL_USD_PRICE_ID = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
-
-// Agent B SDK instance for payment handling
 const agentBSdk = new AckLabSdk({
   baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_AGENT_B!,
-  clientSecret: process.env.CLIENT_SECRET_AGENT_B!
+  clientId: process.env.CLIENT_ID_AGENT_B || '',
+  clientSecret: process.env.CLIENT_SECRET_AGENT_B || ''
 })
 
-// Store pending swap requests and completed swaps
-const pendingSwaps = new Map<string, { 
-  usdcAmount: number; 
-  paymentToken: string;
-  solAmount: number;
-  exchangeRate: number;
-}>()
+const agentASdk = new AckLabSdk({
+  baseUrl: "https://api.ack-lab.com",
+  clientId: process.env.CLIENT_ID_AGENT_A || '',
+  clientSecret: process.env.CLIENT_SECRET_AGENT_A || ''
+})
+
+// ==================== Types & Storage ====================
+interface PendingSwap {
+  usdcAmount: number
+  paymentToken: string
+  solAmount: number
+  exchangeRate: number
+}
+
+const pendingSwaps = new Map<string, PendingSwap>()
 const completedSwaps = new Set<string>()
 
-// Get current SOL/USD exchange rate from Pyth Network
+// ==================== System Prompts ====================
+const AGENT_B_SYSTEM_PROMPT = `You are a swap agent that can exchange USDC for SOL. 
+    
+When asked to swap USDC for SOL:
+1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
+2. Return the payment token in a STRUCTURED format like this:
+   
+   <payment_token>
+   [INSERT_EXACT_PAYMENT_TOKEN_HERE]
+   </payment_token>
+   
+3. Tell the user the exchange rate and how much SOL they will receive
+4. Once they confirm payment with a payment receipt (JWT string), use the executeSwap tool with that receipt. NO need to ask them for their SOL address if they already provided it.
+
+IMPORTANT: 
+- ALWAYS wrap the payment token between <payment_token> and </payment_token> markers
+- The payment receipt you receive should also be in a structured format (between markers)
+- Extract the ENTIRE content between the markers, including all characters
+- The payment receipt is a JWT that contains the payment token and other payment details
+- The payment amount should be in cents (100 USDC = 10000 cents)
+- Show the exchange rate clearly to the user
+- If the payment fails, do NOT try with a smaller amount
+
+For any requests that are not about swapping USDC to SOL, say 'I can only swap USDC for SOL'.`
+
+const AGENT_A_SYSTEM_PROMPT = `You are a user who wants to swap USDC for SOL. You have USDC and want to exchange it for SOL using the Swap Agent.
+
+The Swap Agent will:
+1. Give you an exchange rate and calculate how much SOL you'll receive
+2. Provide a payment token in a structured format between <payment_token> and </payment_token> markers
+3. Execute the swap and send you SOL after payment
+
+When you receive a payment request:
+1. Look for the payment token between <payment_token> and </payment_token> markers
+2. Extract the ENTIRE content between these markers (it will be a long JWT string)
+3. Use the executePayment tool with that EXACT paymentToken
+4. After successful payment, send the receipt back in a STRUCTURED format:
+   
+   Payment completed successfully. 
+   
+   <payment_receipt>
+   [INSERT_FULL_RECEIPT_JWT_HERE]
+   </payment_receipt>
+   
+   Please proceed with sending SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
+
+Your Solana address is: 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
+
+IMPORTANT: 
+- ALWAYS extract the payment token from between the <payment_token> and </payment_token> markers
+- ALWAYS send the receipt between <payment_receipt> and </payment_receipt> markers
+- Include EVERY character of the tokens/receipts - they are long JWT strings
+- If the payment fails, do NOT try with a smaller amount
+- The payment receipt contains the payment token and proof of payment`
+
+// ==================== Price Oracle Functions ====================
 async function getCurrentExchangeRate(): Promise<number> {
   try {
-    // Fetch the latest price update for SOL/USD
     const priceUpdates = await pythClient.getLatestPriceUpdates([SOL_USD_PRICE_ID])
     
-    if (priceUpdates && priceUpdates.parsed && priceUpdates.parsed.length > 0) {
-      const solPriceData = priceUpdates.parsed[0]
-      
-      // Pyth returns price with an exponent, so we need to calculate the actual price
-      // price = solPriceData.price.price * 10^solPriceData.price.expo
-      const price = Number(solPriceData.price.price) * Math.pow(10, solPriceData.price.expo)
-      
-      logger.market('Fetched SOL/USD price from Pyth', {
-        'Price': `$${price.toFixed(2)}`,
-        'Confidence': `±$${(Number(solPriceData.price.conf) * Math.pow(10, solPriceData.price.expo)).toFixed(2)}`,
-        'Updated': new Date(solPriceData.price.publish_time * 1000).toISOString()
-      })
-      
-      // Return the price rounded to 2 decimal places
-      // Since USDC is pegged to USD, SOL/USD price is effectively USDC/SOL
-      return Math.round(price * 100) / 100
+    if (!priceUpdates?.parsed?.length) {
+      logger.warn('No price data available from Pyth, using fallback price')
+      return FALLBACK_SOL_PRICE
     }
+
+    const solPriceData = priceUpdates.parsed[0]
+    const price = Number(solPriceData.price.price) * Math.pow(10, solPriceData.price.expo)
     
-    // Fallback if no price data is available
-    logger.warn('No price data available from Pyth, using fallback price')
-    return 150 // Fallback price
+    logger.market('Fetched SOL/USD price from Pyth', {
+      'Price': `$${price.toFixed(2)}`,
+      'Confidence': `±$${(Number(solPriceData.price.conf) * Math.pow(10, solPriceData.price.expo)).toFixed(2)}`,
+      'Updated': new Date(solPriceData.price.publish_time * 1000).toISOString()
+    })
+    
+    return Math.round(price * 100) / 100
     
   } catch (error) {
     logger.error('Error fetching price from Pyth', error)
-    logger.info('Using fallback price of $150')
-    return 150 // Fallback price in case of error
+    logger.info('Using fallback price of $' + FALLBACK_SOL_PRICE)
+    return FALLBACK_SOL_PRICE
   }
 }
 
-// Mock function to execute the swap
-async function executeSwapOnDex(usdcAmount: number, exchangeRate: number): Promise<{
-  success: boolean;
-  solReceived: number;
-  txHash: string;
-}> {
-  // Simulate swap execution
+// ==================== Mock DEX Functions ====================
+async function executeSwapOnDex(usdcAmount: number, exchangeRate: number) {
   const solAmount = usdcAmount / exchangeRate
+  
   logger.swap('Executing swap on DEX', {
     'USDC Amount': usdcAmount,
     'Exchange Rate': `${exchangeRate} USDC/SOL`,
     'SOL Amount': solAmount.toFixed(6)
   })
   
-  // Simulate processing time
   await new Promise(resolve => setTimeout(resolve, 1000))
   
   return {
@@ -91,17 +140,12 @@ async function executeSwapOnDex(usdcAmount: number, exchangeRate: number): Promi
   }
 }
 
-// Mock function to send SOL to Agent A
-async function sendSolToAgent(recipientAddress: string, solAmount: number): Promise<{
-  success: boolean;
-  txHash: string;
-}> {
+async function sendSolToAgent(recipientAddress: string, solAmount: number) {
   logger.transaction('Sending SOL', {
     'Amount': `${solAmount.toFixed(6)} SOL`,
     'Recipient': recipientAddress
   })
   
-  // Simulate transaction
   await new Promise(resolve => setTimeout(resolve, 500))
   
   return {
@@ -110,31 +154,43 @@ async function sendSolToAgent(recipientAddress: string, solAmount: number): Prom
   }
 }
 
+// ==================== JWT Utilities ====================
+interface JwtPayload {
+  vc?: {
+    credentialSubject?: {
+      paymentToken?: string
+    }
+  }
+  jti?: string
+  sub?: string
+  iss?: string
+  [key: string]: unknown
+}
+
+function decodeJwtPayload(jwt: string): JwtPayload {
+  const tokenParts = jwt.split('.')
+  if (tokenParts.length !== 3) {
+    throw new Error("Invalid JWT format")
+  }
+  return JSON.parse(Buffer.from(tokenParts[1], 'base64').toString()) as JwtPayload
+}
+
+function logJwtIfEnabled(jwt: string, label: string) {
+  if (!DECODE_JWT || !jwt) return
+  
+  try {
+    const payload = decodeJwtPayload(jwt)
+    logger.debug(label, payload)
+  } catch (err) {
+    logger.warn(`Could not decode JWT: ${label}`, String(err))
+  }
+}
+
+// ==================== Agent B: Swap Service ====================
 async function runAgentB(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: `You are a swap agent that can exchange USDC for SOL. 
-    
-    When asked to swap USDC for SOL:
-    1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
-    2. Return the payment token in a STRUCTURED format like this:
-       
-       <payment_token>
-       [INSERT_EXACT_PAYMENT_TOKEN_HERE]
-       </payment_token>
-       
-    3. Tell the user the exchange rate and how much SOL they will receive
-    4. Once they confirm payment with a payment receipt (JWT string), use the executeSwap tool with that receipt. NO need to ask them for their SOL address if they already provided it.
-    
-    IMPORTANT: 
-    - ALWAYS wrap the payment token between <payment_token> and </payment_token> markers
-    - The payment receipt you receive should also be in a structured format (between markers)
-    - Extract the ENTIRE content between the markers, including all characters
-    - The payment receipt is a JWT that contains the payment token and other payment details
-    - The payment amount should be in cents (100 USDC = 10000 cents)
-    - Show the exchange rate clearly to the user
-    
-    For any requests that are not about swapping USDC to SOL, say 'I can only swap USDC for SOL'.`,
+    system: AGENT_B_SYSTEM_PROMPT,
     prompt: message,
     tools: {
       createSwapRequest: tool({
@@ -146,12 +202,10 @@ async function runAgentB(message: string) {
         execute: async ({ usdcAmount }) => {
           logger.process('Creating swap request', { 'Amount': `${usdcAmount} USDC` })
           
-          // Get current exchange rate from Pyth
           const exchangeRate = await getCurrentExchangeRate()
           const solAmount = usdcAmount / exchangeRate
-          
-          // Create payment request for USDC amount (100 USDC = 10000 units)
           const paymentUnits = usdcAmount * 100
+          
           const { paymentToken } = await agentBSdk.createPaymentRequest(
             paymentUnits,
             `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL`
@@ -163,20 +217,8 @@ async function runAgentB(message: string) {
             'Expected SOL': `${solAmount.toFixed(6)} SOL`
           })
           
-          // Decode and display JWT payload if flag is enabled
-          if (DECODE_JWT && paymentToken) {
-            const tokenParts = paymentToken.split('.')
-            if (tokenParts.length === 3) {
-              try {
-                const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
-                logger.debug('Decoded payment token JWT payload', payload)
-              } catch (err) {
-                logger.warn('Could not decode payment token as JWT', String(err))
-              }
-            }
-          }
+          logJwtIfEnabled(paymentToken, 'Decoded payment token JWT payload')
           
-          // Store the pending swap with details
           pendingSwaps.set(paymentToken, { 
             usdcAmount, 
             paymentToken,
@@ -195,6 +237,7 @@ async function runAgentB(message: string) {
           }
         }
       }),
+      
       executeSwap: tool({
         description: "Execute the swap after payment is confirmed",
         inputSchema: z.object({
@@ -202,38 +245,30 @@ async function runAgentB(message: string) {
           recipientAddress: z.string().describe("SOL address to send the swapped SOL").optional()
         }),
         execute: async ({ paymentReceipt, recipientAddress = "7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp" }) => {
-          // Extract receipt from structured format if it's wrapped in markers
-          let actualReceipt = paymentReceipt;
-          
-          // Check if receipt is in structured format
+          // Extract receipt from structured format if present
+          let actualReceipt = paymentReceipt
           const structuredMatch = paymentReceipt.match(/===\s*PAYMENT RECEIPT START\s*===\s*([\s\S]*?)\s*===\s*PAYMENT RECEIPT END\s*===/);
+          
           if (structuredMatch) {
-            actualReceipt = structuredMatch[1].trim();
+            actualReceipt = structuredMatch[1].trim()
             logger.debug('Extracted receipt from structured format', { length: actualReceipt.length })
           }
           
-          // Decode the payment receipt JWT to extract the payment token
-          let paymentToken: string;
-          let receiptId: string | undefined;
+          // Decode and validate payment receipt
+          let paymentToken: string
+          let receiptId: string | undefined
           
           try {
-            const receiptParts = actualReceipt.split('.')
-            if (receiptParts.length !== 3) {
-              return { error: "Invalid payment receipt format" }
-            }
+            const payload = decodeJwtPayload(actualReceipt)
             
-            const payload = JSON.parse(Buffer.from(actualReceipt.split('.')[1], 'base64').toString())
-            
-            // Extract payment token from the receipt's credentialSubject
-            paymentToken = payload.vc?.credentialSubject?.paymentToken
-            if (!paymentToken) {
+            const extractedToken = payload.vc?.credentialSubject?.paymentToken
+            if (!extractedToken) {
               return { error: "Payment token not found in receipt" }
             }
+            paymentToken = extractedToken
             
-            // Extract receipt ID (jti field in the JWT)
             receiptId = payload.jti
             
-            // Log decoded receipt if debugging is enabled
             if (DECODE_JWT) {
               logger.debug('Decoded payment receipt', {
                 paymentToken: paymentToken.substring(0, 50) + '...',
@@ -247,32 +282,29 @@ async function runAgentB(message: string) {
             return { error: "Failed to decode payment receipt" }
           }
           
-          // Check if this payment token exists and hasn't been used
+          // Validate pending swap
           const pendingSwap = pendingSwaps.get(paymentToken)
           if (!pendingSwap) {
             return { error: "Invalid or expired payment token" }
           }
           
-          // Check if swap was already executed
           if (completedSwaps.has(paymentToken)) {
             return { error: "This swap has already been executed" }
           }
           
-          // Execute the swap on mock DEX
+          // Execute swap
           const swapResult = await executeSwapOnDex(pendingSwap.usdcAmount, pendingSwap.exchangeRate)
-          
           if (!swapResult.success) {
             return { error: "Swap execution failed" }
           }
           
           // Send SOL to recipient
           const sendResult = await sendSolToAgent(recipientAddress, swapResult.solReceived)
-          
           if (!sendResult.success) {
             return { error: "Failed to send SOL" }
           }
           
-          // Mark swap as completed
+          // Mark as completed
           completedSwaps.add(paymentToken)
           pendingSwaps.delete(paymentToken)
           
@@ -295,47 +327,13 @@ async function runAgentB(message: string) {
   return result.text
 }
 
-// Agent A SDK instance
-const agentASdk = new AckLabSdk({
-  baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_AGENT_A!,
-  clientSecret: process.env.CLIENT_SECRET_AGENT_A!
-})
-
-const callAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
+// ==================== Agent A: User ====================
+const callSwapAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
 
 async function runAgentA(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: `You are a user who wants to swap USDC for SOL. You have USDC and want to exchange it for SOL using the Swap Agent.
-    
-    The Swap Agent will:
-    1. Give you an exchange rate and calculate how much SOL you'll receive
-    2. Provide a payment token in a structured format between <payment_token> and </payment_token> markers
-    3. Execute the swap and send you SOL after payment
-    
-    When you receive a payment request:
-    1. Look for the payment token between <payment_token> and </payment_token> markers
-    2. Extract the ENTIRE content between these markers (it will be a long JWT string)
-    3. Use the executePayment tool with that EXACT paymentToken
-    4. After successful payment, send the receipt back in a STRUCTURED format:
-       
-       Payment completed successfully. 
-       
-       <payment_receipt>
-       [INSERT_FULL_RECEIPT_JWT_HERE]
-       </payment_receipt>
-       
-       Please proceed with sending SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
-    
-    Your Solana address is: 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
-    
-    IMPORTANT: 
-    - ALWAYS extract the payment token from between the <payment_token> and </payment_token> markers
-    - ALWAYS send the receipt between <payment_receipt> and </payment_receipt> markers
-    - Include EVERY character of the tokens/receipts - they are long JWT strings
-    - If the payment fails, do NOT try with a smaller amount
-    - The payment receipt contains the payment token and proof of payment`,
+    system: AGENT_A_SYSTEM_PROMPT,
     prompt: message,
     tools: {
       callSwapAgent: tool({
@@ -345,11 +343,11 @@ async function runAgentA(message: string) {
         }),
         execute: async ({ message }) => {
           logger.agent('Calling swap agent', message)
+          
           try {
-            const response = await callAgent({ message })
+            const response = await callSwapAgent({ message })
             logger.agent('Swap agent response', response)
             
-            // Try to extract payment token from response for debugging
             const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)
             if (paymentTokenMatch) {
               logger.debug('Detected payment token', paymentTokenMatch[0])
@@ -365,6 +363,7 @@ async function runAgentA(message: string) {
           }
         }
       }),
+      
       executePayment: tool({
         description: "Execute a USDC payment using a payment token received from the Swap Agent",
         inputSchema: z.object({
@@ -377,56 +376,24 @@ async function runAgentA(message: string) {
           })
           
           try {
-            // Decode the payment token to see its contents if flag is enabled
-            if (DECODE_JWT && paymentToken) {
-              const tokenParts = paymentToken.split('.')
-              if (tokenParts.length === 3) {
-                try {
-                  const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
-                  logger.debug('Payment token JWT payload (before execution)', payload)
-                } catch (err) {
-                  logger.warn('Could not decode payment token as JWT', String(err))
-                }
-              }
-            }
+            logJwtIfEnabled(paymentToken, 'Payment token JWT payload (before execution)')
             
             const result = await agentASdk.executePayment(paymentToken)
-            
-            // The receipt is a JWT string, not an object with an id property
             const receiptJwt = result.receipt
+            
             logger.success('Payment successful!', `Receipt ID: ${receiptJwt}`)
-            
-            // Decode the receipt JWT to see its contents if flag is enabled
-            if (DECODE_JWT && receiptJwt) {
-              const tokenParts = receiptJwt.split('.')
-              if (tokenParts.length === 3) {
-                try {
-                  const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
-                  logger.debug('Payment receipt JWT payload', payload)
-                } catch (err) {
-                  logger.warn('Could not decode payment receipt as JWT', String(err))
-                }
-              }
-            }
-            
-            // The amount is returned as part of the result, not on the receipt itself
-            const paidAmount = 100 * 100 // Default to expected amount for demo
-            logger.info('Payment confirmed')
+            logJwtIfEnabled(receiptJwt, 'Payment receipt JWT payload')
             
             return {
               success: true,
-              receipt: receiptJwt,  // Return the full receipt JWT
-              receiptId: receiptJwt,  // Keep for backward compatibility
-              amount: paidAmount,
-              usdcPaid: paidAmount / 100,
+              receipt: receiptJwt,
+              receiptId: receiptJwt,
+              amount: 10000, // Default for demo
+              usdcPaid: 100,
               message: "USDC payment completed successfully"
             }
           } catch (error) {
             logger.error('Payment failed', error)
-            
-            if (error instanceof Error) {
-              logger.error('Error details', error.message)
-            }
             
             const errorWithResponse = error as { response?: { data?: unknown } }
             
@@ -439,23 +406,22 @@ async function runAgentA(message: string) {
         }
       })
     },
-    stopWhen: stepCountIs(8) // Increased to handle payment flow
+    stopWhen: stepCountIs(8)
   })
 
   return result.text
 }
 
+// ==================== Server Initialization ====================
 export function startAgentServers() {
   logger.section('STARTING AGENT SERVERS')
   
-  // Start Agent A server on port 7576
   serveAgent({
     port: 7576,
     runAgent: runAgentA,
     decodeJwt: DECODE_JWT
   })
 
-  // Start Agent B server on port 7577
   serveAuthedAgent({
     port: 7577,
     runAgent: runAgentB,
@@ -471,7 +437,7 @@ export function startAgentServers() {
   logger.separator()
 }
 
-// If this file is run directly, start the servers
+// Run servers if executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   startAgentServers()
 }

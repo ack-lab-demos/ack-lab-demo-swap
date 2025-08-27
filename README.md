@@ -8,11 +8,26 @@
 
 A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (ACK), showcasing how autonomous AI agents can negotiate and execute USDC to SOL swaps with built-in authentication and payment processing.
 
+> ⚠️ **Disclaimer**: This is a **vibe-coded demonstration example** created to showcase ACK capabilities. Unlike ACK-Lab and other production components, this demo hasn't undergone extensive testing or security audits. It's designed for educational purposes to help developers understand agent-to-agent commerce patterns.
+
 This demo showcases agent-to-agent communication using the ACK Lab SDK. It 
 demonstrates how AI agents collaborate to execute cryptocurrency swaps, with 
 one agent (Agent A) representing a user who wants to swap USDC for SOL, and 
 another agent (Agent B) providing the swap service.
 
+## 🎭 What's Real vs. Mocked
+
+This demo uses **real ACK-Lab infrastructure** for authentication and payment processing, but **simulates** some compontents:
+
+### ✅ Real Components
+- **ACK-Lab Authentication**: Actual agent identity verification and JWT token generation
+- **ACK-Pay Payment Processing**: Real payment token creation and validation
+- **Pyth Network Price Oracle**: Live SOL/USD price feeds from Pyth
+- **Agent Communication**: Authentic HTTP-based agent-to-agent messaging
+
+### 🎬 Mocked/Simulated Components
+- **SOL Transfer**: The demo simulates sending SOL to the user's wallet - no actual SOL is transferred
+- **DEX Swap Execution**: The swap is simulated, not executed on any real DEX
 
 ## 🌟 About Agent Commerce Kit (ACK)
 
@@ -285,15 +300,15 @@ The demo simulates a cryptocurrency swap service where:
 
 ### Agent A (User)
 - Represents a user wanting to swap USDC for SOL
-- Manages wallet address (7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp)
-- Executes payments using ACK-Pay
+- Uses a mock wallet address (7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp)
+- Executes payments using ACK-Pay (real payment tokens, settled in Solana testnet)
 - Confirms transaction receipts
 
-### Agent B (Swap Service)
-- Fetches real-time SOL/USD prices from Pyth Network
-- Creates payment requests for exact USDC amounts
-- Simulates DEX swap execution
-- Sends SOL to user's wallet upon payment confirmation
+### Agent B (Swap Service) 
+- Fetches real-time SOL/USD prices from Pyth Network (REAL price data)
+- Creates payment requests for exact USDC amounts (REAL ACK-Pay tokens)
+- **Simulates** DEX swap execution (no actual blockchain interaction)
+- **Simulates** sending SOL to user's wallet (returns mock transaction hash)
 
 ### Price Oracle Integration
 - **Pyth Network**: Provides real-time SOL/USD price feeds
@@ -336,12 +351,12 @@ serveAuthedAgent({
 - **Response**: Structured JSON with transaction details
 
 ### Swap Execution Flow
-1. **Rate Discovery**: Fetch current SOL/USD from Pyth Network
-2. **Payment Request**: Generate JWT token with swap details
-3. **Payment Processing**: Execute USDC payment via ACK-Pay
-4. **Swap Simulation**: Process swap on mock DEX
-5. **SOL Delivery**: Transfer SOL to user's wallet
-6. **Confirmation**: Return transaction hashes and receipt
+1. **Rate Discovery**: Fetch current SOL/USD from Pyth Network *(REAL)*
+2. **Payment Request**: Generate JWT token with swap details *(REAL ACK-Pay)*
+3. **Payment Processing**: Execute USDC payment via ACK-Pay *(REAL tokens, settled in Solana testnet)*
+4. **Swap Simulation**: Process swap on mock DEX *(SIMULATED - no blockchain)*
+5. **SOL Delivery**: Transfer SOL to user's wallet *(SIMULATED - mock transaction)*
+6. **Confirmation**: Return transaction hashes and receipt *(SIMULATED hashes)*
 
 ## 💬 Example Usage
 
@@ -354,7 +369,7 @@ Enter your request: swap 25 USDC for SOL
 
 >>> Processing request: swap 25 USDC for SOL
 
-📊 Fetched SOL/USD price from Pyth: $150.50
+📊 Fetched SOL/USD price from Pyth: $150.50         [REAL PRICE DATA]
    Price confidence: ±$0.30
    Publish time: 2024-01-15T10:30:45.000Z
 
@@ -362,21 +377,21 @@ Current exchange rate: 150.50 USDC/SOL
 You will receive: 0.664452 SOL
 
 Payment request created for 100 USDC (10000 units)
-Payment token: pay_abc123xyz...
+Payment token: pay_abc123xyz...                    [REAL ACK-PAY TOKEN]
 
 Executing payment...
-✅ Payment successful! Receipt ID: rcpt_def456...
+✅ Payment successful! Receipt ID: rcpt_def456...  [REAL ACK-PAY RECEIPT]
 
-🔄 Executing swap on DEX...
+🔄 Executing swap on DEX...                        [SIMULATED]
    USDC: 100
    Rate: 150.50 USDC/SOL
    SOL: 0.664452
 
-💸 Sending 0.664452 SOL to 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
+💸 Sending 0.664452 SOL to 7VQo3HWes...           [SIMULATED]
 
 Swap completed successfully!
-- Swap TX: 0x7f8a9b2c...
-- Send TX: 0x3d4e5f6a...
+- Swap TX: 0x7f8a9b2c...                          [MOCK TRANSACTION HASH]
+- Send TX: 0x3d4e5f6a...                          [MOCK TRANSACTION HASH]
 ```
 
 ### Web UI Features
@@ -433,6 +448,15 @@ These use cases demonstrate how ACK enables a new economy where AI agents can be
 - [Catena Labs](https://www.catenalabs.com)
 - [Pyth Network Price Feeds](https://pyth.network)
 - [Replit Port Configuration Guide](https://docs.replit.com/hosting/deploying-http-servers)
+
+## ⚠️ Production Readiness
+
+This repository is a **demonstration example** that hasn't undergone the extensive testing, security audits, or hardening that production ACK-Lab components receive. It's designed to showcase ACK capabilities and help developers understand agent-to-agent commerce patterns.
+
+**For production use**:
+- ACK-Lab SDK and infrastructure undergo rigorous testing
+- The patterns shown here can be adapted for real-world applications
+- Always implement proper error handling, security measures, and testing for production systems
 
 ## 📄 License
 
