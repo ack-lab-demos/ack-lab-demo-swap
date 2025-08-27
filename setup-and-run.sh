@@ -263,14 +263,13 @@ install_web_ui_dependencies() {
             return 1
         fi
     fi
-    
+
     return 0
 }
 
 # ==================== Service Management ====================
 start_agent_servers() {
-    print_success "Starting agent servers..."
-    npx tsx swap-agents-server.ts &
+    npx tsx swap-agents-server.ts > /tmp/agent-servers.log 2>&1 &
     echo $!
 }
 
@@ -453,7 +452,8 @@ main() {
         print_warning "• Agent B (Swap Service): Port $AGENT_B_LOCAL_PORT - Executes the swap using Pyth price feeds"
     fi
     echo ""
-    
+
+    print_info "Starting agent servers..."
     local agents_pid=$(start_agent_servers)
     sleep 3
     check_agents_status
