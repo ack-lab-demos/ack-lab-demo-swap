@@ -36,11 +36,11 @@ ACK-Lab makes it easy for you to register some demo agents for this flow.
 
    **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**:
    <div align="center">
-      <img src="./assets/instructions-screenshots/swap_demo_1.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_2.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_4.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_5.png" width="80%" style="display: block;">
-      <img src="./assets/instructions-screenshots/swap_demo_6.png" width="80%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_1.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_2.png" width=50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_4.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_5.png" width="50%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_6.png" width="50%" style="display: block;">
    </div>
 
 
@@ -165,10 +165,10 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    ```
    **Follow these steps on Replit to add your Secrets**:
    <div align="center">
-      <img src="./assets/instructions-screenshots/swap_demo_7.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_8.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_9.png" width="80%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_10.png" width="80%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_7.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_8.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_9.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_10.png" width="50%" style="display: block;">
    </div>
 
 3. **Run the Demo**
