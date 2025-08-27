@@ -232,10 +232,8 @@ install_dependencies() {
             exit 1
         fi
         
-        if command -v pnpm &> /dev/null; then
-            pnpm install
-        else
-            npm install
+        npm install
+        
         fi
         
         if [ $? -eq 0 ]; then
