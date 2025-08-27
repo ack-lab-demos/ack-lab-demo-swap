@@ -15,46 +15,6 @@ demonstrates how AI agents collaborate to execute cryptocurrency swaps, with
 one agent (Agent A) representing a user who wants to swap USDC for SOL, and 
 another agent (Agent B) providing the swap service.
 
-## 🎭 What's Real vs. Mocked
-
-This demo uses **real ACK-Lab infrastructure** for authentication and payment processing, but **simulates** some compontents:
-
-### ✅ Real Components
-- **ACK-Lab Authentication**: Actual agent identity verification and JWT token generation
-- **ACK-Pay Payment Processing**: Real payment token creation and validation
-- **Pyth Network Price Oracle**: Live SOL/USD price feeds from Pyth
-- **Agent Communication**: Authentic HTTP-based agent-to-agent messaging
-
-### 🎬 Mocked/Simulated Components
-- **SOL Transfer**: The demo simulates sending SOL to the user's wallet - no actual SOL is transferred
-- **DEX Swap Execution**: The swap is simulated, not executed on any real DEX
-
-## 🌟 About Agent Commerce Kit (ACK)
-
-**Agent Commerce Kit (ACK)** is a set of open-source patterns built by [Catena Labs](https://www.catenalabs.com) to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
-
-### The Vision
-
-Rapid advancements in AI are creating a new "agent economy" where autonomous agents can become powerful economic participants. However, existing financial systems present significant barriers:
-
-- **Identity Crisis**: No widely adopted standards for identifying and authorizing AI agents
-- **Transaction Barriers**: Legacy systems impose friction incompatible with autonomous, high-speed agent workflows
-- **Untapped Economic Potential**: Current systems cannot support novel transaction models like micropayments for data or direct agent-to-agent payments
-
-ACK solves these challenges through two complementary protocols:
-- **ACK-ID**: Verifiable agent identity through DIDs and Verifiable Credentials
-- **ACK-Pay**: Agent-native payment patterns for seamless transactions
-
-Learn more at [agentcommercekit.com](https://agentcommercekit.com)
-
-## 🚀 Getting Started with ACK-Lab
-
-**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview platform where you can leverage ACK implementations to give your agents:
-
-1. **An Identity**: A verifiable, cryptographic ID so your agent can prove who it is
-2. **A Wallet**: A secure wallet so your agent can pay and get paid
-3. **A Rulebook**: Policies that govern what your agent is allowed to do
-
 ### Prerequisites
 
 To run this demo, you need to:
@@ -104,13 +64,6 @@ The swap demo includes an **educational onboarding guide** that teaches develope
 4. **Step 4: Rate Limiting** - Replace the size limit with a $60/hour spend limit
 5. **Step 5: Testing Limits** - Execute swaps within the hourly budget
 6. **Step 6: Hit Rate Limit** - Experience rate limiting protection in action
-
-### Educational Benefits
-
-- **Learn by Doing**: Set real rules and see immediate effects
-- **Understand Protection**: See how rules protect against accidents and attacks
-- **No Code Changes**: Rules operate at the infrastructure level
-- **Full Control**: Learn to modify and remove rules based on needs
 
 The tutorial guides you through each step, automatically detecting rule violations and providing educational context about how ACK-Lab's rules protect your automated transactions.
 
@@ -413,6 +366,47 @@ Swap completed successfully!
 - **Connection refused**: Verify agent servers are running on correct ports
 - **Payment failures**: Check ACK Lab API connectivity and credentials
 - **Price oracle errors**: Verify internet connectivity for Pyth Network access
+
+## 🎭 What's Real vs. Mocked
+
+This demo uses **real ACK-Lab infrastructure** for authentication and payment processing, but **simulates** some compontents:
+
+### ✅ Real Components
+- **ACK-Lab Authentication**: Actual agent identity verification and JWT token generation
+- **ACK-Pay Payment Processing**: Real payment token creation and validation
+- **Pyth Network Price Oracle**: Live SOL/USD price feeds from Pyth
+- **Agent Communication**: Authentic HTTP-based agent-to-agent messaging
+
+### 🎬 Mocked/Simulated Components
+- **SOL Transfer**: The demo simulates sending SOL to the user's wallet - no actual SOL is transferred
+- **DEX Swap Execution**: The swap is simulated, not executed on any real DEX
+
+## 🌟 About Agent Commerce Kit (ACK)
+
+**Agent Commerce Kit (ACK)** is a set of open-source patterns built by [Catena Labs](https://www.catenalabs.com) to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
+
+### The Vision
+
+Rapid advancements in AI are creating a new "agent economy" where autonomous agents can become powerful economic participants. However, existing financial systems present significant barriers:
+
+- **Identity Crisis**: No widely adopted standards for identifying and authorizing AI agents
+- **Transaction Barriers**: Legacy systems impose friction incompatible with autonomous, high-speed agent workflows
+- **Untapped Economic Potential**: Current systems cannot support novel transaction models like micropayments for data or direct agent-to-agent payments
+
+ACK solves these challenges through two complementary protocols:
+- **ACK-ID**: Verifiable agent identity through DIDs and Verifiable Credentials
+- **ACK-Pay**: Agent-native payment patterns for seamless transactions
+
+Learn more at [agentcommercekit.com](https://agentcommercekit.com)
+
+## 🚀 Getting Started with ACK-Lab
+
+**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview platform where you can leverage ACK implementations to give your agents:
+
+1. **An Identity**: A verifiable, cryptographic ID so your agent can prove who it is
+2. **A Wallet**: A secure wallet so your agent can pay and get paid
+3. **A Rulebook**: Policies that govern what your agent is allowed to do
+
 
 ## 💡 What Else Can You Build with ACK?
 
