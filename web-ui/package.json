@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ack-hub/sdk": "^0.0.3-alpha.1",
+    "@ack-lab/sdk": "^0.0.2",
     "@ai-sdk/anthropic": "^2.0.6",
     "@hono/node-server": "^1.19.0",
     "@hono/valibot-validator": "^0.5.3",

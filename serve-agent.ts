@@ -4,7 +4,7 @@ import { Hono, type TypedResponse } from "hono"
 import * as v from "valibot"
 import { type JwtString } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
-import type { AckLabSdk } from "@ack-hub/sdk"
+import type { AckLabSdk } from "@ack-lab/sdk"
 import { logger } from "./logger"
 
 const DECODE_JWT = process.env.DECODE_JWT !== 'false'
