@@ -144,8 +144,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
 
 ### Replit Port Configuration
 - **Agent A**: Internal port 7576 → External port 3000
-- **Agent B**: Internal port 7577 → External port 3001  
-- **Web UI**: Internal port 3000 → External port 80
+- **Agent B**: Internal port 7577 → External port 3001
 
 ### Quick Start on Replit
 
@@ -181,7 +180,6 @@ The demo is optimized for Replit's cloud environment with automatic port forward
 4. **Access Points on Replit**
    - Agent A API: `https://[your-repl-name].[username].repl.co:3000`
    - Agent B API: `https://[your-repl-name].[username].repl.co:3001`
-   - Web UI: `https://[your-repl-name].[username].repl.co`
 
 ## 💻 Local Execution (Secondary Method)
 
@@ -230,7 +228,6 @@ npm run agents:start
 ### Local Access Points
 - Agent A: `http://localhost:7576`
 - Agent B: `http://localhost:7577`
-- Web UI: `http://localhost:3000`
 
 ## 🔧 Setup Script Deep Dive
 
@@ -243,7 +240,6 @@ The `setup-and-run.sh` script orchestrates the entire demo environment:
 
 ### 2. Dependency Management
 - Installs root dependencies via npm
-- Conditionally installs web UI dependencies
 - Detects and uses appropriate package manager
 
 ### 3. Agent Server Initialization
@@ -263,7 +259,6 @@ This command:
 ### 5. Interactive Menu System
 - **Tutorial Mode**: Step-by-step ACK-Lab rules tutorial (recommended for first-time users)
 - **CLI Demo**: Free-form command-line interaction with agents
-- **Web UI**: Visual interface for monitoring swap execution
 - **Exit**: Graceful shutdown of all services
 
 ## 📊 Demo Scenario
@@ -365,13 +360,6 @@ Swap completed successfully!
 - Swap TX: 0x7f8a9b2c...                          [MOCK TRANSACTION HASH]
 - Send TX: 0x3d4e5f6a...                          [MOCK TRANSACTION HASH]
 ```
-
-### Web UI Features
-- **Visual Step Tracking**: Real-time progress through swap stages
-- **Live Price Updates**: Simulated exchange rate fluctuations
-- **JWT Token Decoder**: Educational tool to inspect payment tokens
-- **Transaction Results**: Complete swap details and hashes
-- **Flow Diagram**: Interactive visualization of agent architecture
 
 ## 🐛 Troubleshooting
 

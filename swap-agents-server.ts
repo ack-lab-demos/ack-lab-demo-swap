@@ -433,7 +433,7 @@ export function startAgentServers() {
   logger.server('Agent A (User)', 'http://localhost:7576')
   logger.server('Agent B (Swap Service)', 'http://localhost:7577')
   logger.raw('', 'after')
-  logger.info('The web UI can now communicate with these agents')
+  logger.info('The agents are now ready for interaction')
   logger.separator()
 }
 

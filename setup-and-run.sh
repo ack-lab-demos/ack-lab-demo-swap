@@ -19,7 +19,6 @@ REQUIRED_VARS=(
 
 AGENT_A_LOCAL_PORT=7576
 AGENT_B_LOCAL_PORT=7577
-WEB_UI_LOCAL_PORT=3000
 
 # ==================== Utility Functions ====================
 print_color() {
@@ -77,13 +76,6 @@ get_port_for_environment() {
                 echo "3001"
             else
                 echo "$AGENT_B_LOCAL_PORT"
-            fi
-            ;;
-        "web_ui")
-            if [ "$environment" = "replit" ]; then
-                echo "80"
-            else
-                echo "$WEB_UI_LOCAL_PORT"
             fi
             ;;
     esac
@@ -330,28 +322,6 @@ install_dependencies() {
     fi
 }
 
-install_web_ui_dependencies() {
-    if [ ! -d "web-ui" ]; then
-        print_error "web-ui directory not found!"
-        return 1
-    fi
-    
-    if [ ! -d "web-ui/node_modules" ] || [ "web-ui/package.json" -nt "web-ui/node_modules" ]; then
-        print_warning "Installing Web UI dependencies..."
-        (cd web-ui && npm install)
-        
-        if [ $? -eq 0 ]; then
-            print_success "Web UI dependencies installed"
-            return 0
-        else
-            print_error "Failed to install Web UI dependencies"
-            return 1
-        fi
-    fi
-    
-    return 0
-}
-
 # ==================== Service Management ====================
 start_agent_servers() {
     print_success "Starting agent servers..."
@@ -388,7 +358,6 @@ display_endpoints() {
     local environment=$1
     local agent_a_port=$(get_port_for_environment "agent_a" "$environment")
     local agent_b_port=$(get_port_for_environment "agent_b" "$environment")
-    local web_ui_port=$(get_port_for_environment "web_ui" "$environment")
     
     print_info "\nAgent Server Endpoints:"
     
@@ -396,7 +365,6 @@ display_endpoints() {
         print_warning "Port forwarding on Replit:"
         print_color "$CYAN" "  • Local port $AGENT_A_LOCAL_PORT → External port $agent_a_port"
         print_color "$CYAN" "  • Local port $AGENT_B_LOCAL_PORT → External port $agent_b_port"
-        print_color "$CYAN" "  • Local port $WEB_UI_LOCAL_PORT → External port $web_ui_port (Web UI)"
         echo ""
         print_success "  • Agent A (User): https://$REPLIT_DEV_DOMAIN:$agent_a_port"
         print_success "  • Agent B (Swap Service): https://$REPLIT_DEV_DOMAIN:$agent_b_port"
@@ -426,39 +394,11 @@ run_cli_demo() {
     SKIP_TUTORIAL=true npx tsx cli-demos/swap-demo.ts
 }
 
-run_web_ui() {
-    local environment=$1
-    
-    print_success "\n🌐 Setting up Web UI..."
-    
-    if ! install_web_ui_dependencies; then
-        return 1
-    fi
-    
-    local web_ui_port=$(get_port_for_environment "web_ui" "$environment")
-    
-    print_success "Starting Web UI..."
-    if [ "$environment" = "replit" ]; then
-        print_warning "On Replit: Local port $WEB_UI_LOCAL_PORT is forwarded to external port $web_ui_port"
-        if [ "$web_ui_port" = "80" ]; then
-            print_warning "The web interface will open at https://$REPLIT_DEV_DOMAIN"
-        else
-            print_warning "The web interface will open at https://$REPLIT_DEV_DOMAIN:$web_ui_port"
-        fi
-    else
-        print_warning "The web interface will open at http://localhost:$web_ui_port"
-    fi
-    print_warning "Press Ctrl+C to stop the Web UI and return to this menu.\n"
-    
-    (cd web-ui && npm run dev)
-}
-
 display_menu() {
     print_info "🎮 Choose how to interact with the demo:"
     print_success "  1. Tutorial - Interactive ACK-Lab rules tutorial (RECOMMENDED)"
     print_success "  2. CLI Demo - Free-form command-line interface"
-    print_success "  3. Web UI - Visual web interface (requires additional setup)"
-    print_success "  4. Exit - Stop the demo"
+    print_success "  3. Exit - Stop the demo"
     echo ""
     print_warning "💡 Tip: You can force exit at any time with Ctrl+C"
     echo ""
@@ -470,8 +410,7 @@ display_post_action_menu() {
     print_info "${last_action} finished. What would you like to do next?"
     print_success "  1. Tutorial - ${last_action:=Tutorial ? Run : Learn about rules}"
     print_success "  2. CLI Demo - ${last_action:=CLI Demo ? Run again : Try the command-line interface}"
-    print_success "  3. Web UI - ${last_action:=Web UI ? Run again : Try the visual interface}"
-    print_success "  4. Exit - Stop the demo"
+    print_success "  3. Exit - Stop the demo"
     echo ""
 }
 
@@ -563,7 +502,7 @@ main() {
     display_menu
     
     while true; do
-        read -p "$(print_color "$CYAN" "Enter your choice (1/2/3/4): ")" choice
+        read -p "$(print_color "$CYAN" "Enter your choice (1/2/3): ")" choice
         
         case $choice in
             1)
@@ -575,14 +514,10 @@ main() {
                 display_post_action_menu "CLI Demo"
                 ;;
             3)
-                run_web_ui "$environment"
-                display_post_action_menu "Web UI"
-                ;;
-            4)
                 cleanup_and_exit "$agents_pid"
                 ;;
             *)
-                print_error "Invalid choice. Please enter 1, 2, 3, or 4."
+                print_error "Invalid choice. Please enter 1, 2, or 3."
                 ;;
         esac
     done
