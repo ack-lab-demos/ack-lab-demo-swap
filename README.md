@@ -368,7 +368,7 @@ Swap completed successfully!
 
 ## 🎭 What's Real vs. Mocked
 
-This demo uses **real ACK-Lab infrastructure** for authentication and payment processing, but **simulates** some compontents:
+This demo uses **real ACK-Lab infrastructure** for authentication and payment processing, but **simulates** some components:
 
 ### ✅ Real Components
 - **ACK-Lab Authentication**: Actual agent identity verification and JWT token generation
@@ -447,6 +447,7 @@ These use cases demonstrate how ACK enables a new economy where AI agents can be
 This repository is a **demonstration example** that hasn't undergone the extensive testing, security audits, or hardening that production ACK-Lab components receive. It's designed to showcase ACK capabilities and help developers understand agent-to-agent commerce patterns.
 
 **For production use**:
+
 - ACK-Lab SDK and infrastructure undergo rigorous testing
 - The patterns shown here can be adapted for real-world applications
 - Always implement proper error handling, security measures, and testing for production systems

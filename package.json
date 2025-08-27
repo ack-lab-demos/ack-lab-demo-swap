@@ -1,14 +1,14 @@
 {
-  "name": "swap-demo",
+  "name": "ack-lab-demo-swap",
   "version": "1.0.0",
-  "description": "Demo showcasing agent-to-agent communication",
+  "description": "Ack Lab Demo: Swap",
   "main": "swap-demo.ts",
   "type": "module",
   "scripts": {
     "start": "tsx cli-demos/swap-demo.ts",
     "tutorial": "tsx cli-demos/swap-demo.ts",
     "demo": "SKIP_TUTORIAL=true tsx cli-demos/swap-demo.ts",
-    "dev": "tsx watch cli-demos/swap-demo.ts",
+    "dev": "./setup-and-run.sh",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "demo:swap": "tsx cli-demos/swap-demo.ts",
@@ -47,6 +47,6 @@
     "typescript-eslint": "^8.39.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

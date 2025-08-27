@@ -1,11 +1,11 @@
-modules = ["nodejs-18"]
-run = "./setup-and-run.sh"
+modules = ["nodejs-20"]
+run = "npm run dev"
 
 [nix]
 channel = "stable-25_05"
 
 [deployment]
-run = ["sh", "-c", "./setup-and-run.sh"]
+run = ["sh", "-c", "npm run dev"]
 
 [[ports]]
 localPort = 7576
