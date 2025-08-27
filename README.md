@@ -34,13 +34,13 @@ When you're done, click "Run" at the top of your screen to get started.
 ## Registering Your Agents on ACK-Lab
 ACK-Lab makes it easy for you to register some demo agents for this flow. 
 
-   **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**:
+   **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**. You will have to generate the keys for your first agent, enter them in .env or Replit Secrets, then do the same for the second agent:
    <div align="center">
       <img src="./assets/instructions-screenshots/swap_demo_1.png" width="50%" style="display: block; margin-bottom: 10px;">
       <img src="./assets/instructions-screenshots/swap_demo_2.png" width=50%" style="display: block; margin-bottom: 10px;">
       <img src="./assets/instructions-screenshots/swap_demo_4.png" width="50%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_5.png" width="50%" style="display: block;">
-      <img src="./assets/instructions-screenshots/swap_demo_6.png" width="50%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_5.png" width="50%" style="display: block; margin-bottom: 10px;">
+      <img src="./assets/instructions-screenshots/swap_demo_6.png" width="50%" style="display: block; margin-bottom: 10px;">
    </div>
 
 
@@ -154,7 +154,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    - Enter the repository URL
 
 2. **Configure Environment Variables**
-   - Create a `.env` file or use Replit Secrets. Note that public Replit projects expose all files, including .env files. We strongly recommending using Replit's Secrets tool.
+   - Create a `.env` file or use [Replit Secrets](https://docs.replit.com/replit-workspace/workspace-features/secrets). Note that public Replit projects expose all files, including .env files. We strongly recommending using Replit's Secrets tool.
    - Add your ACK Lab credentials:
    ```env
    ANTHROPIC_API_KEY=your_anthropic_key
@@ -168,7 +168,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
       <img src="./assets/instructions-screenshots/swap_demo_7.png" width="50%" style="display: block; margin-bottom: 10px;">
       <img src="./assets/instructions-screenshots/swap_demo_8.png" width="50%" style="display: block; margin-bottom: 10px;">
       <img src="./assets/instructions-screenshots/swap_demo_9.png" width="50%" style="display: block; margin-bottom: 10px;">
-      <img src="./assets/instructions-screenshots/swap_demo_10.png" width="50%" style="display: block;">
+      <img src="./assets/instructions-screenshots/swap_demo_10.png" width="50%" style="display: block; margin-bottom: 10px;">
    </div>
 
 3. **Run the Demo**
