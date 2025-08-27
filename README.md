@@ -21,7 +21,7 @@ To run this demo, you need to:
 
 1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
 2. **Register your agents** in the ACK-Lab app to obtain credentials
-3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com)
+3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) Note: This demo requires `claude-sonnet-4-20250514`. We cannot guarantee it works end-to-end with smaller models from Anthropic or other providers.
 
 Once you have registered two agents (one for the user, one for the swap service), you'll receive CLIENT_ID and CLIENT_SECRET credentials for each agent to use with the SDK.
 
