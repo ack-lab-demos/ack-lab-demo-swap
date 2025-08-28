@@ -194,7 +194,7 @@ get_credential_prompt() {
 }
 
 prompt_for_credentials() {
-    local missing_vars=($1)
+    local missing_vars=("$@")
     
     if [ ${#missing_vars[@]} -eq 0 ]; then
         print_success "All required credentials are configured"

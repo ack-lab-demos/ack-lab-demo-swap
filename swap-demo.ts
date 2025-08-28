@@ -151,7 +151,7 @@ But what if you wanted to protect yourself from accidentally making large trades
     printHeader("Step 2: Setting Transaction Limits", `
 Now let's add some safety rules to protect against large transactions.
 
-We'll set a maximum transaction size of $10. This means any swap attempt
+We'll set a transaction spend limit of $10. This means any swap attempt
 over $10 will be automatically rejected - protecting you from mistakes.
 `)
 
@@ -159,14 +159,14 @@ over $10 will be automatically rejected - protecting you from mistakes.
     console.log(colors.white("1. Go to ACK-lab at: ") + colors.cyan(ACK_LAB_URL))
     console.log(colors.white("2. Navigate to the Rules tab in your Swap Bot agent"))
     console.log(colors.white("3. Create a new rule with:"))
-    console.log(colors.yellow("   - Type: Maximum Transaction Size"))
+    console.log(colors.yellow("   - Type: Transaction Spend Limit"))
     console.log(colors.yellow("   - Value: $10"))
     console.log(colors.white("4. Save and activate the rule\n"))
 
     const shouldOpen = await this.askToOpenBrowser()
     if (shouldOpen) await openACKLab()
 
-    await waitForUserConfirmation("\nPress Enter when you've set the $10 maximum transaction size rule...")
+    await waitForUserConfirmation("\nPress Enter when you've set the $10 transaction spend limit rule...")
     console.log(colors.green("✓ Great! Rule should now be active."))
   }
 
@@ -197,7 +197,7 @@ by ACK-lab's rule engine - protecting you from the large transaction.
       console.log(colors.white(`
 Perfect! The rule worked as expected.
 
-Your $10 maximum transaction size rule successfully blocked the 25 USDC swap.
+Your $10 transaction spend limit rule successfully blocked the 25 USDC swap.
 This demonstrates how rules protect you from unintended large transactions.
 `))
       return true
@@ -207,7 +207,7 @@ This demonstrates how rules protect you from unintended large transactions.
       printWarning("Unexpected:", result.message)
       console.log(colors.yellow(`
 The swap succeeded but it should have been blocked.
-Please ensure you've set the maximum transaction size rule to $10 in ACK-lab.
+Please ensure you've set the transaction spend limit rule to $10 in ACK-lab.
 `))
     } else {
       printError("Error:", result.message)
@@ -221,15 +221,15 @@ Please ensure you've set the maximum transaction size rule to $10 in ACK-lab.
     printHeader("Step 4: Rate Limiting with Hourly Spend Limits", `
 Transaction size limits are useful, but what about preventing rapid spending?
 
-Let's replace the transaction size rule with an hourly spend limit.
+Let's replace the transaction spend limit rule with an hourly spend limit.
 This protects against both automated scripts gone wrong and potential attacks.
 `)
 
     console.log(colors.blue("\n📋 Your Task:"))
     console.log(colors.white("1. Go back to ACK-lab"))
-    console.log(colors.white("2. ") + colors.red("Delete") + colors.white(" the $10 maximum transaction size rule"))
+    console.log(colors.white("2. ") + colors.red("Delete") + colors.white(" the $10 transaction spend limit rule"))
     console.log(colors.white("3. Create a new rule with:"))
-    console.log(colors.yellow("   - Type: Maximum Spend Per Hour"))
+    console.log(colors.yellow("   - Type: Rate Limit"))
     console.log(colors.yellow("   - Value: $60"))
     console.log(colors.white("4. Save and activate the rule\n"))
 
@@ -237,12 +237,12 @@ This protects against both automated scripts gone wrong and potential attacks.
     if (shouldOpen) await openACKLab()
 
     await waitForUserConfirmation("\nPress Enter when you've removed the old rule and set the $60/hour spend limit...")
-    console.log(colors.green("✓ Perfect! Hourly spend limit should now be active."))
+    console.log(colors.green("✓ Perfect! Hourly rate limit should now be active."))
   }
 
   async runStep5_TestHourlyLimit(): Promise<boolean> {
-    printHeader("Step 5: Testing the Hourly Spend Limit", `
-With the hourly spend limit of $60, let's do another 25 USDC swap.
+    printHeader("Step 5: Testing the Hourly rate Limit", `
+With the hourly rate limit of $60, let's do another 25 USDC swap.
 
 Remember: You already spent $${this.totalSpent} in Step 1, so this will bring your
 total to $${this.totalSpent + 25} for this hour - still within your $60 limit!
