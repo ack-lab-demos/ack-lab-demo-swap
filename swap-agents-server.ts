@@ -208,7 +208,7 @@ async function runAgentB(message: string) {
           
           const { paymentToken } = await agentBSdk.createPaymentRequest(
             paymentUnits,
-            `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL`
+            { description: `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL` }
           )
           
           logger.transaction('Payment token generated', {
