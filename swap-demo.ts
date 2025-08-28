@@ -8,13 +8,13 @@ import { promisify } from "util"
 const execAsync = promisify(exec)
 
 // ==================== Configuration ====================
-const AGENT_URL = "http://localhost:7576"
+const SWAP_USER_URL = "http://localhost:7576"
 const ACK_LAB_URL = "https://ack-lab.catenalabs.com"
 
 // ==================== Agent Communication ====================
 async function checkAgentsAvailable(): Promise<boolean> {
   try {
-    await fetch(`${AGENT_URL}/`, {
+    await fetch(`${SWAP_USER_URL}/`, {
       method: "GET",
       signal: AbortSignal.timeout(2000)
     })
@@ -26,17 +26,17 @@ async function checkAgentsAvailable(): Promise<boolean> {
 
 async function executeSwap(command: string): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await fetch(`${AGENT_URL}/chat`, {
+    const result = await fetch(`${SWAP_USER_URL}/chat`, {
       method: "POST",
       body: JSON.stringify({ message: command }),
       headers: { "Content-Type": "application/json" }
     })
 
     if (!result.ok) {
-      return {
-        success: false,
-        message: `Failed to communicate with agent: ${result.status} ${result.statusText}`
-      }
+          return {
+      success: false,
+      message: `Failed to communicate with swap user: ${result.status} ${result.statusText}`
+    }
     }
 
     const responseSchema = z.object({ text: z.string() })
@@ -366,9 +366,9 @@ Thank you for completing the ACK-lab Rules Tutorial!
 async function runFreeFormMode() {
   console.log(colors.cyan("\n=== USDC to SOL Swap Demo (CLI) ==="))
   console.log(colors.gray("This CLI connects to the swap agents running on localhost"))
-  console.log(colors.gray("Make sure the agents are running with: npm run agents:start\n"))
+  console.log(colors.gray("Make sure the swap agents are running with: npm run agents:start\n"))
   
-  console.log(colors.yellow("\nExchange USDC for SOL using the Swap Agent"))
+  console.log(colors.yellow("\nExchange USDC for SOL using the Swap Service"))
   console.log(colors.gray("Current rate: SOL/USD price from Pyth Network"))
   console.log(colors.gray("Type /exit to quit\n"))
 
@@ -517,15 +517,15 @@ async function main() {
   if (process.env.SKIP_TUTORIAL === "true") {
     console.log(colors.gray("🔍 Checking system status..."))
     
-    if (!await checkAgentsAvailable()) {
-      printError("Agents are not running!")
-      console.log(colors.yellow("\nPlease start the agents first:"))
-      console.log(colors.gray("  Run in another terminal: npm run agents:start"))
-      console.log(colors.gray("  Or: tsx swap-agents-server.ts\n"))
-      process.exit(1)
-    }
-    
-    console.log(colors.green("✅ Agents are running and ready!"))
+      if (!await checkAgentsAvailable()) {
+    printError("Swap agents are not running!")
+    console.log(colors.yellow("\nPlease start the swap agents first:"))
+    console.log(colors.gray("  Run in another terminal: npm run agents:start"))
+    console.log(colors.gray("  Or: tsx swap-agents-server.ts\n"))
+    process.exit(1)
+  }
+  
+  console.log(colors.green("✅ Swap agents are running and ready!"))
     await runFreeFormMode()
     return
   }

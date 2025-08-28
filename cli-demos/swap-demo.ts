@@ -159,9 +159,9 @@ over $10 will be automatically rejected - protecting you from mistakes.
     console.log(colors.white("1. Go to ACK-lab at: ") + colors.cyan(ACK_LAB_URL))
     console.log(colors.white("2. Navigate to the Rules tab in your Swap Bot agent"))
     console.log(colors.white("3. Create a new rule with:"))
-    console.log(colors.yellow("   - Type: Maximum Transaction Size"))
+    console.log(colors.yellow("   - Type: Transaction Spent Limit"))
     console.log(colors.yellow("   - Value: $10"))
-    console.log(colors.white("4. Save and activate the rule\n"))
+    console.log(colors.white("4. Save the rule\n"))
 
     const shouldOpen = await this.askToOpenBrowser()
     if (shouldOpen) await openACKLab()
@@ -229,9 +229,9 @@ This protects against both automated scripts gone wrong and potential attacks.
     console.log(colors.white("1. Go back to ACK-lab"))
     console.log(colors.white("2. ") + colors.red("Delete") + colors.white(" the $10 maximum transaction size rule"))
     console.log(colors.white("3. Create a new rule with:"))
-    console.log(colors.yellow("   - Type: Maximum Spend Per Hour"))
+    console.log(colors.yellow("   - Type: Rate Limit"))
     console.log(colors.yellow("   - Value: $60"))
-    console.log(colors.white("4. Save and activate the rule\n"))
+    console.log(colors.white("4. Save the rule\n"))
 
     const shouldOpen = await this.askToOpenBrowser("Would you like me to open ACK-lab again?")
     if (shouldOpen) await openACKLab()

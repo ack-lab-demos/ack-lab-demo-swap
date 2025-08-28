@@ -15,16 +15,16 @@ const FALLBACK_SOL_PRICE = 150
 // ==================== SDK Initialization ====================
 const pythClient = new HermesClient("https://hermes.pyth.network", {})
 
-const agentBSdk = new AckLabSdk({
+const swapServiceSdk = new AckLabSdk({
   baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_AGENT_B || '',
-  clientSecret: process.env.CLIENT_SECRET_AGENT_B || ''
+  clientId: process.env.CLIENT_ID_SWAP_SERVICE || '',
+  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE || ''
 })
 
-const agentASdk = new AckLabSdk({
+const swapUserSdk = new AckLabSdk({
   baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_AGENT_A || '',
-  clientSecret: process.env.CLIENT_SECRET_AGENT_A || ''
+  clientId: process.env.CLIENT_ID_SWAP_USER || '',
+  clientSecret: process.env.CLIENT_SECRET_SWAP_USER || ''
 })
 
 // ==================== Types & Storage ====================
@@ -39,7 +39,7 @@ const pendingSwaps = new Map<string, PendingSwap>()
 const completedSwaps = new Set<string>()
 
 // ==================== System Prompts ====================
-const AGENT_B_SYSTEM_PROMPT = `You are a swap agent that can exchange USDC for SOL. 
+const SWAP_SERVICE_SYSTEM_PROMPT = `You are a swap agent that can exchange USDC for SOL. 
     
 When asked to swap USDC for SOL:
 1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
@@ -72,9 +72,9 @@ IMPORTANT TECHNICAL DETAILS:
 
 For any requests that are not about swapping USDC to SOL, say 'I can only swap USDC for SOL'.`
 
-const AGENT_A_SYSTEM_PROMPT = `You are a user who wants to swap USDC for SOL. You have USDC and want to exchange it for SOL using the Swap Agent.
+const SWAP_USER_SYSTEM_PROMPT = `You are a user who wants to swap USDC for SOL. You have USDC and want to exchange it for SOL using the Swap Service.
 
-The Swap Agent will:
+The Swap Service will:
 1. Give you an exchange rate and calculate how much SOL you'll receive
 2. Provide a payment token in a structured format between <payment_token> and </payment_token> markers
 3. Execute the swap and send you SOL after payment
@@ -100,7 +100,7 @@ CRITICAL PAYMENT BEHAVIOR RULES:
 - If a payment fails due to spending limits, insufficient funds, or any other reason, you MUST NOT attempt a smaller amount
 - NEVER ask the Swap Agent to process a partial payment or smaller amount
 - NEVER suggest alternative amounts when a payment fails
-- If your payment fails, inform the Swap Agent that the payment failed and ask them to cancel the transaction
+- If your payment fails, inform the Swap Service that the payment failed and ask them to cancel the transaction
 - You should only request a new swap with a different amount as a completely separate, new transaction
 - Think of this like using a credit card - if the full amount is declined, you don't automatically try a smaller charge
 
@@ -203,11 +203,11 @@ function logJwtIfEnabled(jwt: string, label: string) {
   }
 }
 
-// ==================== Agent B: Swap Service ====================
-async function runAgentB(message: string) {
+// ==================== Swap Service ====================
+async function runSwapService(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: AGENT_B_SYSTEM_PROMPT,
+    system: SWAP_SERVICE_SYSTEM_PROMPT,
     prompt: message,
     tools: {
       createSwapRequest: tool({
@@ -223,9 +223,9 @@ async function runAgentB(message: string) {
           const solAmount = usdcAmount / exchangeRate
           const paymentUnits = usdcAmount * 100
           
-          const { paymentToken } = await agentBSdk.createPaymentRequest(
+          const { paymentToken } = await swapServiceSdk.createPaymentRequest(
             paymentUnits,
-            `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL`
+            { description: `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL` }
           )
           
           logger.transaction('Payment token generated', {
@@ -344,26 +344,26 @@ async function runAgentB(message: string) {
   return result.text
 }
 
-// ==================== Agent A: User ====================
-const callSwapAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
+// ==================== Swap User ====================
+const callSwapService = swapUserSdk.createAgentCaller("http://localhost:7577/chat")
 
-async function runAgentA(message: string) {
+async function runSwapUser(message: string) {
   const result = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
-    system: AGENT_A_SYSTEM_PROMPT,
+    system: SWAP_USER_SYSTEM_PROMPT,
     prompt: message,
     tools: {
-      callSwapAgent: tool({
-        description: "Call the Swap Agent to exchange USDC for SOL",
+      callSwapService: tool({
+        description: "Call the Swap Service to exchange USDC for SOL",
         inputSchema: z.object({
           message: z.string()
         }),
         execute: async ({ message }) => {
-          logger.agent('Calling swap agent', message)
+          logger.agent('Calling swap service', message)
           
           try {
-            const response = await callSwapAgent({ message })
-            logger.agent('Swap agent response', response)
+            const response = await callSwapService({ message })
+            logger.agent('Swap service response', response)
             
             const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)
             if (paymentTokenMatch) {
@@ -372,7 +372,7 @@ async function runAgentA(message: string) {
             
             return response
           } catch (error) {
-            logger.error('Error calling swap agent', error)
+            logger.error('Error calling swap service', error)
             return {
               error: true,
               message: error instanceof Error ? error.message : "Unknown error"
@@ -395,7 +395,7 @@ async function runAgentA(message: string) {
           try {
             logJwtIfEnabled(paymentToken, 'Payment token JWT payload (before execution)')
             
-            const result = await agentASdk.executePayment(paymentToken)
+            const result = await swapUserSdk.executePayment(paymentToken)
             const receiptJwt = result.receipt
             
             logger.success('Payment successful!', `Receipt ID: ${receiptJwt}`)
@@ -431,26 +431,26 @@ async function runAgentA(message: string) {
 
 // ==================== Server Initialization ====================
 export function startAgentServers() {
-  logger.section('STARTING AGENT SERVERS')
+  logger.section('STARTING SWAP AGENT SERVERS')
   
   serveAgent({
     port: 7576,
-    runAgent: runAgentA,
+    runAgent: runSwapUser,
     decodeJwt: DECODE_JWT
   })
 
   serveAuthedAgent({
     port: 7577,
-    runAgent: runAgentB,
-    sdk: agentBSdk,
+    runAgent: runSwapService,
+    sdk: swapServiceSdk,
     decodeJwt: DECODE_JWT
   })
 
-  logger.success('Agent servers started')
-  logger.server('Agent A (User)', 'http://localhost:7576')
-  logger.server('Agent B (Swap Service)', 'http://localhost:7577')
+  logger.success('Swap agent servers started')
+  logger.server('Swap User', 'http://localhost:7576')
+  logger.server('Swap Service', 'http://localhost:7577')
   logger.raw('', 'after')
-  logger.info('The agents are now ready for interaction')
+  logger.info('The swap agents are now ready for interaction')
   logger.separator()
 }
 

@@ -12,8 +12,8 @@ A demonstration of secure agent-to-agent commerce using the Agent Commerce Kit (
 
 This demo showcases agent-to-agent communication using the ACK Lab SDK. It 
 demonstrates how AI agents collaborate to execute cryptocurrency swaps, with 
-one agent (Agent A) representing a user who wants to swap USDC for SOL, and 
-another agent (Agent B) providing the swap service.
+one agent (Swap User) representing a user who wants to swap USDC for SOL, and 
+another agent (Swap Service) providing the swap service.
 
 ### Prerequisites
 
@@ -22,7 +22,7 @@ To run this demo, you need to:
 1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
 2. **Register your agents** in the ACK-Lab app to obtain credentials. (see [Registering Your Agents on ACK-Lab](#registering-your-agents-on-ack-lab) below)
 3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) Note: This demo requires `claude-sonnet-4-20250514`. We cannot guarantee it works end-to-end with smaller models from Anthropic or other providers.
-4. **Save your Secrets in Replit** (see [Quick Start on Replit](#quick-start-on-replit) below)
+4. **Save your Secrets in Replit** (see [Quick Start on Replit](#quick-start-on-replit))
 
 
 When you're done, click "Run" at the top of your screen to get started.
@@ -94,8 +94,8 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
                                           └────────┬────────┘
                                                    │
 ┌─────────────────┐                      ┌────────▼────────┐
-│   Agent A       │  HTTP POST /chat     │   Agent B       │
-│    (User)       │─────────────────────▶│ (Swap Service)  │
+│   Swap User     │  HTTP POST /chat     │  Swap Service   │
+│                 │─────────────────────▶│                 │
 │  Port: 7576     │◀─────────────────────│  Port: 7577     │
 └─────────────────┘  Negotiation Flow    └─────────────────┘
         │                                          │
@@ -114,16 +114,16 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
 
 1. **Agent Initialization**: Each agent is instantiated with ACK Lab SDK credentials:
    ```typescript
-   const agentASdk = new AckLabSdk({
+   const swapUserSdk = new AckLabSdk({
      baseUrl: "https://api.ack-lab.com",
-     clientId: process.env.CLIENT_ID_AGENT_A,
-     clientSecret: process.env.CLIENT_SECRET_AGENT_A
+     clientId: process.env.CLIENT_ID_SWAP_USER,
+     clientSecret: process.env.CLIENT_SECRET_SWAP_USER
    })
    ```
 
-2. **Secure Connection**: Agent A creates a secure caller to Agent B's `/chat` endpoint:
+2. **Secure Connection**: Swap User creates a secure caller to Swap Service's `/chat` endpoint:
    ```typescript
-   const callAgent = agentASdk.createAgentCaller("http://localhost:7577/chat")
+   const callSwapService = swapUserSdk.createAgentCaller("http://localhost:7577/chat")
    ```
 
 3. **Message Exchange**: Agents communicate through structured HTTP requests to `/chat` endpoints, with the SDK handling:
@@ -133,18 +133,18 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
    - Response verification
 
 4. **Payment Flow**: When agents agree on a swap:
-   - Agent B fetches real-time SOL/USD price from Pyth Network
-   - Agent B generates a payment token via ACK-Pay
-   - Agent A validates and processes the payment
-   - Agent B executes the swap and sends SOL upon payment confirmation
+   - Swap Service fetches real-time SOL/USD price from Pyth Network
+   - Swap Service generates a payment token via ACK-Pay
+   - Swap User validates and processes the payment
+   - Swap Service executes the swap and sends SOL upon payment confirmation
 
 ## 🚀 Running on Replit (Primary Method)
 
 The demo is optimized for Replit's cloud environment with automatic port forwarding:
 
 ### Replit Port Configuration
-- **Agent A**: Internal port 7576 → External port 3000
-- **Agent B**: Internal port 7577 → External port 3001
+- **Swap User**: Internal port 7576 → External port 3000
+- **Swap Service**: Internal port 7577 → External port 3001
 
 ### Quick Start on Replit
 
@@ -157,10 +157,10 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    - Add your ACK Lab credentials:
    ```env
    ANTHROPIC_API_KEY=your_anthropic_key
-   CLIENT_ID_AGENT_A=your_agent_a_client_id
-   CLIENT_SECRET_AGENT_A=your_agent_a_client_secret
-   CLIENT_ID_AGENT_B=your_agent_b_client_id
-   CLIENT_SECRET_AGENT_B=your_agent_b_client_secret
+   CLIENT_ID_SWAP_USER=your_swap_user_client_id
+   CLIENT_SECRET_SWAP_USER=your_swap_user_client_secret
+   CLIENT_ID_SWAP_SERVICE=your_swap_service_client_id
+   CLIENT_SECRET_SWAP_SERVICE=your_swap_service_client_secret
    ```
    **Follow these steps on Replit to add your Secrets**:
    <div align="center">
@@ -178,8 +178,8 @@ The demo is optimized for Replit's cloud environment with automatic port forward
      - Launch the interactive menu
 
 4. **Access Points on Replit**
-   - Agent A API: `https://[your-repl-name].[username].repl.co:3000`
-   - Agent B API: `https://[your-repl-name].[username].repl.co:3001`
+   - Swap User API: `https://[your-repl-name].[username].repl.co:3000`
+   - Swap Service API: `https://[your-repl-name].[username].repl.co:3001`
 
 ## 💻 Local Execution (Secondary Method)
 
@@ -199,10 +199,10 @@ For local development and testing:
 2. **Create `.env` file** with your credentials:
 ```env
    ANTHROPIC_API_KEY=your_anthropic_key
-   CLIENT_ID_AGENT_A=your_agent_a_client_id
-   CLIENT_SECRET_AGENT_A=your_agent_a_client_secret
-   CLIENT_ID_AGENT_B=your_agent_b_client_id
-   CLIENT_SECRET_AGENT_B=your_agent_b_client_secret
+   CLIENT_ID_SWAP_USER=your_swap_user_client_id
+   CLIENT_SECRET_SWAP_USER=your_swap_user_client_secret
+   CLIENT_ID_SWAP_SERVICE=your_swap_service_client_id
+   CLIENT_SECRET_SWAP_SERVICE=your_swap_service_client_secret
    ```
 
 3. **Run the Setup Script**
@@ -226,8 +226,8 @@ npm run agents:start
 ```
 
 ### Local Access Points
-- Agent A: `http://localhost:7576`
-- Agent B: `http://localhost:7577`
+- Swap User: `http://localhost:7576`
+- Swap Service: `http://localhost:7577`
 
 ## 🔧 Setup Script Deep Dive
 
@@ -247,7 +247,7 @@ The `setup-and-run.sh` script orchestrates the entire demo environment:
 npx tsx swap-agents-server.ts &
 ```
 This command:
-- Spawns two Node.js processes for Agent A and Agent B
+- Spawns two Node.js processes for Swap User and Swap Service
 - Each agent runs an Express server with `/chat` endpoints
 - Agents are equipped with ACK Lab SDK instances for secure communication
 
@@ -265,13 +265,13 @@ This command:
 
 The demo simulates a cryptocurrency swap service where:
 
-### Agent A (User)
+### Swap User
 - Represents a user wanting to swap USDC for SOL
 - Uses a mock wallet address (7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp)
 - Executes payments using ACK-Pay (real payment tokens, settled in Solana testnet)
 - Confirms transaction receipts
 
-### Agent B (Swap Service) 
+### Swap Service
 - Fetches real-time SOL/USD prices from Pyth Network (REAL price data)
 - Creates payment requests for exact USDC amounts (REAL ACK-Pay tokens)
 - **Simulates** DEX swap execution (no actual blockchain interaction)
@@ -295,19 +295,19 @@ The demo simulates a cryptocurrency swap service where:
 
 ### Agent Configuration
 ```typescript
-// Agent B with payment capabilities and price oracle
+// Swap Service with payment capabilities and price oracle
 const pythClient = new HermesClient("https://hermes.pyth.network", {})
-const agentBSdk = new AckLabSdk({
+const swapServiceSdk = new AckLabSdk({
   baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_AGENT_B,
-  clientSecret: process.env.CLIENT_SECRET_AGENT_B
+  clientId: process.env.CLIENT_ID_SWAP_SERVICE,
+  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE
 })
 
 // Serve authenticated agent with SDK
 serveAuthedAgent({
   port: 7577,
-  runAgent: runAgentB,
-  sdk: agentBSdk
+  runAgent: runSwapService,
+  sdk: swapServiceSdk
 })
 ```
 
