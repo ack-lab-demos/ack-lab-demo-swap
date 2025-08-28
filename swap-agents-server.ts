@@ -52,14 +52,23 @@ When asked to swap USDC for SOL:
 3. Tell the user the exchange rate and how much SOL they will receive
 4. Once they confirm payment with a payment receipt (JWT string), use the executeSwap tool with that receipt. NO need to ask them for their SOL address if they already provided it.
 
-IMPORTANT: 
+CRITICAL PAYMENT PROCESSING RULES:
+- You MUST process payments for the EXACT amount requested - never partial amounts
+- If a payment fails due to spending limits or insufficient funds, you MUST reject the entire transaction
+- NEVER suggest, attempt, or process a smaller amount when the original payment fails
+- NEVER say things like "I was able to process X amount instead" - this is strictly forbidden
+- If the requested amount cannot be processed, inform the user that the transaction failed and they need to either:
+  a) Increase their spending limit, or 
+  b) Request a smaller swap amount from the beginning
+- You are like a merchant terminal - either the full amount goes through or the transaction is declined
+
+IMPORTANT TECHNICAL DETAILS: 
 - ALWAYS wrap the payment token between <payment_token> and </payment_token> markers
 - The payment receipt you receive should also be in a structured format (between markers)
 - Extract the ENTIRE content between the markers, including all characters
 - The payment receipt is a JWT that contains the payment token and other payment details
 - The payment amount should be in cents (100 USDC = 10000 cents)
 - Show the exchange rate clearly to the user
-- If the payment fails, do NOT try with a smaller amount
 
 For any requests that are not about swapping USDC to SOL, say 'I can only swap USDC for SOL'.`
 
@@ -86,11 +95,19 @@ When you receive a payment request:
 
 Your Solana address is: 7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp
 
-IMPORTANT: 
+CRITICAL PAYMENT BEHAVIOR RULES:
+- You MUST only attempt to pay the EXACT amount requested by the Swap Agent
+- If a payment fails due to spending limits, insufficient funds, or any other reason, you MUST NOT attempt a smaller amount
+- NEVER ask the Swap Agent to process a partial payment or smaller amount
+- NEVER suggest alternative amounts when a payment fails
+- If your payment fails, inform the Swap Agent that the payment failed and ask them to cancel the transaction
+- You should only request a new swap with a different amount as a completely separate, new transaction
+- Think of this like using a credit card - if the full amount is declined, you don't automatically try a smaller charge
+
+IMPORTANT TECHNICAL DETAILS: 
 - ALWAYS extract the payment token from between the <payment_token> and </payment_token> markers
 - ALWAYS send the receipt between <payment_receipt> and </payment_receipt> markers
 - Include EVERY character of the tokens/receipts - they are long JWT strings
-- If the payment fails, do NOT try with a smaller amount
 - The payment receipt contains the payment token and proof of payment`
 
 // ==================== Price Oracle Functions ====================
@@ -208,7 +225,7 @@ async function runAgentB(message: string) {
           
           const { paymentToken } = await agentBSdk.createPaymentRequest(
             paymentUnits,
-            { description: `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL` }
+            `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL`
           )
           
           logger.transaction('Payment token generated', {
