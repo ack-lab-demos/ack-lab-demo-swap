@@ -17,14 +17,14 @@ const pythClient = new HermesClient("https://hermes.pyth.network", {})
 
 const swapServiceSdk = new AckLabSdk({
   baseUrl: process.env.ACK_LAB_BASE_URL ?? "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_SWAP_SERVICE || '',
-  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE || ''
+  clientId: process.env.CLIENT_ID_SWAP_SERVICE ?? "",
+  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE ?? ""
 })
 
 const swapUserSdk = new AckLabSdk({
   baseUrl: process.env.ACK_LAB_BASE_URL ?? "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_SWAP_USER || '',
-  clientSecret: process.env.CLIENT_SECRET_SWAP_USER || ''
+  clientId: process.env.CLIENT_ID_SWAP_USER ?? "",
+  clientSecret: process.env.CLIENT_SECRET_SWAP_USER ?? ""
 })
 
 // ==================== Types & Storage ====================
@@ -339,7 +339,7 @@ async function runSwapService(message: string) {
 }
 
 // ==================== Swap User ====================
-const callSwapService = swapUserSdk.createAgentCaller("http://localhost:7577/chat")
+const callSwapService = swapUserSdk.createAgentCaller("http://localhost:7577/chat", z.string(), z.string())
 
 async function runSwapUser(message: string) {
   const result = await generateText({
@@ -356,7 +356,7 @@ async function runSwapUser(message: string) {
           logger.agent('Calling swap service', message)
           
           try {
-            const response = await callSwapService({ message })
+            const response = await callSwapService(message)
             logger.agent('Swap service response', response)
             
             const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)

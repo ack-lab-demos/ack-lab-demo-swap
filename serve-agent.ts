@@ -6,6 +6,7 @@ import { type JwtString } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
 import type { AckLabSdk } from "@ack-lab/sdk"
 import { logger } from "./logger"
+import { z } from "zod"
 
 const DECODE_JWT = process.env.DECODE_JWT !== 'false'
 
@@ -182,7 +183,7 @@ export function serveAuthedAgent({
 }: ServeAuthedAgentConfig) {
   logger.info('Starting authenticated agent server...')
 
-  const agentHandler = sdk.createRequestHandler(runAgent)
+  const agentHandler = sdk.createRequestHandler(z.string(), runAgent)
   const app = new Hono()
 
   app.use("*", httpLoggingMiddleware)
