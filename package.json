@@ -28,7 +28,7 @@
     "@hono/valibot-validator": "^0.5.3",
     "@inquirer/prompts": "^7.8.2",
     "@pythnetwork/hermes-client": "^2.0.0",
-    "agentcommercekit": "^0.9.1",
+    "agentcommercekit": "^0.10.0",
     "ai": "^5.0.14",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
