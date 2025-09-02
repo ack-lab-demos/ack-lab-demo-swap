@@ -36,8 +36,9 @@ Visit [console.anthropic.com](https://console.anthropic.com) and obtain an API k
 Click the "Run on Replit" button at the top of this README or import from GitHub URL.
 
 ### Step 4: Register Your First Agent in ACK-Lab
-1. Navigate to the Agent Registration section in ACK-Lab
-2. Create a "Swap User" agent
+1. Navigate to the New Agent section in ACK-Lab
+2. Click "Let's Go" on "Swap Agent". This will automatically register two agents: "Swap User" and "Swap Service" agents, each with their own identities and wallets.
+3. On your "Swap User" agent, click "Create API Key"
 3. Generate and copy the CLIENT_ID and CLIENT_SECRET
 
 <div align="center">
@@ -62,12 +63,11 @@ Click the "Run on Replit" button at the top of this README or import from GitHub
    <img src="./assets/instructions-screenshots/swap_demo_10.png" width="50%" style="display: block; margin-bottom: 10px;">
 </div>
 
-### Step 6: Register Your Second Agent in ACK-Lab
+### Step 6: Get Keys for Your Second Agent in ACK-Lab
 1. Return to ACK-Lab
-2. Create a "Swap Service" agent
-3. Generate and copy the CLIENT_ID and CLIENT_SECRET
+2. Generate and copy the CLIENT_ID and CLIENT_SECRET for the "Swap Service" agent.
 
-### Step 7: Add Second Agent Credentials to Replit
+### Step 7: Add Swap Service Credentials to Replit
 Add these additional secrets:
    - `CLIENT_ID_SWAP_SERVICE`: Your Swap Service client ID
    - `CLIENT_SECRET_SWAP_SERVICE`: Your Swap Service client secret
