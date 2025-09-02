@@ -157,10 +157,10 @@ over $10 will be automatically rejected - protecting you from mistakes.
 
     console.log(colors.blue("\n📋 Your Task:"))
     console.log(colors.white("1. Go to ACK-lab at: ") + colors.cyan(ACK_LAB_URL))
-    console.log(colors.white("2. Navigate to the Rules tab in your Swap Bot agent"))
+    console.log(colors.white("2. Navigate to the Rules tab in your Swap User agent"))
     console.log(colors.white("3. Create a new rule with:"))
     console.log(colors.yellow("   - Type: Transaction Spend Limit"))
-    console.log(colors.yellow("   - Value: $10"))
+    console.log(colors.yellow("   - Amount: $10"))
     console.log(colors.white("4. Save and activate the rule\n"))
 
     const shouldOpen = await this.askToOpenBrowser()
@@ -227,10 +227,11 @@ This protects against both automated scripts gone wrong and potential attacks.
 
     console.log(colors.blue("\n📋 Your Task:"))
     console.log(colors.white("1. Go back to ACK-lab"))
-    console.log(colors.white("2. ") + colors.red("Delete") + colors.white(" the $10 transaction spend limit rule"))
+    console.log(colors.white("2. ") + colors.red("Disable") + colors.white(" the $10 transaction spend limit rule"))
     console.log(colors.white("3. Create a new rule with:"))
     console.log(colors.yellow("   - Type: Rate Limit"))
-    console.log(colors.yellow("   - Value: $60"))
+    console.log(colors.yellow("   - Amount: $60"))
+    console.log(colors.yellow("   - Time window: 1 hour"))
     console.log(colors.white("4. Save and activate the rule\n"))
 
     const shouldOpen = await this.askToOpenBrowser("Would you like me to open ACK-lab again?")
