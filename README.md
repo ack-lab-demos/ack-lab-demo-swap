@@ -390,7 +390,7 @@ This demo uses **real ACK-Lab infrastructure** for authentication and payment pr
 
 ## 🌟 About Agent Commerce Kit (ACK)
 
-**Agent Commerce Kit (ACK)** is a set of open-source patterns built by [Catena Labs](https://www.catenalabs.com) to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
+[**Agent Commerce Kit (ACK)**](https://agentcommercekit.com) is a set of open-source patterns to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
 
 ### The Vision
 
@@ -408,7 +408,7 @@ Learn more at [agentcommercekit.com](https://agentcommercekit.com)
 
 ## 🚀 Getting Started with ACK-Lab
 
-**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview platform where you can leverage ACK implementations to give your agents:
+**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview where you can leverage ACK implementations to give your agents:
 
 1. **An Identity**: A verifiable, cryptographic ID so your agent can prove who it is
 2. **A Wallet**: A secure wallet so your agent can pay and get paid
