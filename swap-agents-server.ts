@@ -174,7 +174,7 @@ async function sendSolToAgent(recipientAddress: string, solAmount: number) {
 interface JwtPayload {
   vc?: {
     credentialSubject?: {
-      paymentToken?: string
+      paymentRequestToken?: string
     }
   }
   jti?: string
@@ -222,7 +222,7 @@ async function runSwapService(message: string) {
           const solAmount = usdcAmount / exchangeRate
           const paymentUnits = usdcAmount * 100
 
-          const { url: paymentRequestUrl, paymentToken } = await swapServiceSdk.createPaymentRequest(
+          const { url: paymentRequestUrl, paymentRequestToken } = await swapServiceSdk.createPaymentRequest(
             paymentUnits,
             { description: `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL` }
           )
@@ -239,9 +239,9 @@ async function runSwapService(message: string) {
             'Expected SOL': `${solAmount.toFixed(6)} SOL`
           })
 
-          logJwtIfEnabled(paymentToken, 'Decoded payment request token JWT payload')
+          logJwtIfEnabled(paymentRequestToken, 'Decoded payment request token JWT payload')
 
-          pendingSwaps.set(paymentToken, {
+          pendingSwaps.set(paymentRequestToken, {
             usdcAmount,
             paymentRequestUrl,
             solAmount,
@@ -271,20 +271,20 @@ async function runSwapService(message: string) {
             res.text()
           )
           // Decode and validate payment receipt
-          let paymentToken: string
+          let paymentRequestToken: string
 
           try {
             const payload = decodeJwtPayload(paymentReceipt)
 
-            const extractedToken = payload.vc?.credentialSubject?.paymentToken
+            const extractedToken = payload.vc?.credentialSubject?.paymentRequestToken
             if (!extractedToken) {
               return { error: "Payment request token not found in receipt" }
             }
-            paymentToken = extractedToken
+            paymentRequestToken = extractedToken
 
             if (DECODE_JWT) {
               logger.debug('Decoded payment receipt', {
-                paymentToken: paymentToken.substring(0, 50) + '...',
+                paymentRequestToken: paymentRequestToken.substring(0, 50) + '...',
                 subject: payload.sub,
                 issuer: payload.iss
               })
@@ -295,12 +295,12 @@ async function runSwapService(message: string) {
           }
           
           // Validate pending swap
-          const pendingSwap = pendingSwaps.get(paymentToken)
+          const pendingSwap = pendingSwaps.get(paymentRequestToken)
           if (!pendingSwap) {
             return { error: "Invalid or expired payment request token" }
           }
           
-          if (completedSwaps.has(paymentToken)) {
+          if (completedSwaps.has(paymentRequestToken)) {
             return { error: "This swap has already been executed" }
           }
           
@@ -317,8 +317,8 @@ async function runSwapService(message: string) {
           }
           
           // Mark as completed
-          completedSwaps.add(paymentToken)
-          pendingSwaps.delete(paymentToken)
+          completedSwaps.add(paymentRequestToken)
+          pendingSwaps.delete(paymentRequestToken)
           
           return {
             success: true,
@@ -359,11 +359,6 @@ async function runSwapUser(message: string) {
             const response = await callSwapService(message)
             logger.agent('Swap service response', response)
             
-            const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)
-            if (paymentTokenMatch) {
-              logger.debug('Detected payment request token', paymentTokenMatch[0])
-            }
-            
             return response
           } catch (error) {
             logger.error('Error calling swap service', error)
@@ -386,13 +381,13 @@ async function runSwapUser(message: string) {
           })
           
           try {
-            const paymentToken = await fetch(paymentRequestUrl).then((res) =>
+            const paymentRequestToken = await fetch(paymentRequestUrl).then((res) =>
               res.text()
             )
 
-            logJwtIfEnabled(paymentToken, 'Payment request token JWT payload (before execution)')
+            logJwtIfEnabled(paymentRequestToken, 'Payment request token JWT payload (before execution)')
 
-            const result = await swapUserSdk.executePayment(paymentToken)
+            const result = await swapUserSdk.executePayment(paymentRequestToken)
             const receiptJwt = result.receipt
             const receiptUrl = result.url
 
