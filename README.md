@@ -401,7 +401,7 @@ Rapid advancements in AI are creating a new "agent economy" where autonomous age
 - **Untapped Economic Potential**: Current systems cannot support novel transaction models like micropayments for data or direct agent-to-agent payments
 
 ACK solves these challenges through two complementary protocols:
-- **ACK-ID**: Verifiable agent identity through DIDs and Verifiable Credentials
+- **ACK-ID**: Verifiable agent identity through Decentralized Identifiers (DIDs) and Verifiable Credentials (VCs)
 - **ACK-Pay**: Agent-native payment patterns for seamless transactions
 
 Learn more at [agentcommercekit.com](https://agentcommercekit.com)
