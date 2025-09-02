@@ -19,7 +19,7 @@ another agent (Swap Service) providing the swap service.
 
 To run this demo, you need to:
 
-1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
+1. **Join the ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
 2. If you have not done so already in ACK-Lab, **register your agents** to obtain credentials.(see [Registering Your Agents on ACK-Lab](#registering-your-agents-on-ack-lab) below)
 3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) Note: This demo requires `claude-sonnet-4-20250514`. We cannot guarantee it works end-to-end with smaller models from Anthropic or other providers.
 4. **Save your Secrets in Replit** (see [Quick Start on Replit](#quick-start-on-replit))
@@ -32,9 +32,9 @@ When you're done, click "Run" at the top of your screen to get started.
 </div>
 
 ## Registering Your Agents on ACK-Lab
-ACK-Lab makes it easy for you to register some demo agents for this flow.
+ACK-Lab makes it easy for you to register the demo agents for this example flow.
 
-   **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**. You will have to generate the keys for your first agent, enter them in .env or Replit Secrets, then do the same for the second agent:
+   **Follow these steps on ACK-Lab to create your agents and get the necessary API keys**. You will generate the keys for your first agent, enter them in Replit Secrets (or .env if running locally), and then do the same for the second agent:
    <div align="center">
       <img src="./assets/instructions-screenshots/swap_demo_1.png" width="50%" style="display: block; margin-bottom: 10px;">
       <img src="./assets/instructions-screenshots/swap_demo_2.png" width=50%" style="display: block; margin-bottom: 10px;">
@@ -46,10 +46,10 @@ ACK-Lab makes it easy for you to register some demo agents for this flow.
 
 ## 🔐 Agent Commerce Kit Integration
 
-This demo leverages the **Agent Commerce Kit (ACK)** to enable secure, robust transactions between autonomous agents. ACK provides enterprise-grade infrastructure for agent commerce through two core components:
+This demo leverages the [**Agent Commerce Kit (ACK)**](https://www.agentcommercekit.com/) to enable secure, robust transactions between autonomous agents with verifiable identities. ACK provides enterprise-grade infrastructure for agent commerce through two core components:
 
 ### ACK-ID (Identity & Authentication)
-- **Secure Agent Identity**: Each agent receives unique credentials (CLIENT_ID and CLIENT_SECRET) that serve as their digital identity
+- **Secure Agent Identity**: Each agent receives unique credentials that serve as its digital identity
 - **Credential Management**: Handles authentication tokens and secure credential exchange between agents
 - **Trust Framework**: Ensures only authorized agents can participate in transactions
 
@@ -71,9 +71,9 @@ The swap demo includes an **educational onboarding guide** that teaches develope
 
 ### Tutorial Flow
 
-1. **Step 1: Initial Swap** - Execute a successful 25 USDC to SOL swap with no restrictions
+1. **Step 1: Initial Swap** - Execute a successful 25 USDC to SOL swap with no restrictions (using **testnet tokens only**)
 2. **Step 2: Transaction Limits** - Learn to set a $10 maximum transaction size rule in ACK-Lab
-3. **Step 3: Rule Enforcement** - See how the same swap is now blocked by your rule
+3. **Step 3: Rule Enforcement** - See how the same testnet swap is now blocked by your rule
 4. **Step 4: Rate Limiting** - Replace the size limit with a $60/hour spend limit
 5. **Step 5: Testing Limits** - Execute swaps within the hourly budget
 6. **Step 6: Hit Rate Limit** - Experience rate limiting protection in action
@@ -153,8 +153,8 @@ The demo is optimized for Replit's cloud environment with automatic port forward
    - Enter the repository URL
 
 2. **Configure Environment Variables**
-   - Create a `.env` file or use [Replit Secrets](https://docs.replit.com/replit-workspace/workspace-features/secrets). Note that public Replit projects expose all files, including .env files. We strongly recommending using Replit's Secrets tool.
-   - Add your ACK Lab credentials:
+   - Use [Replit Secrets](https://docs.replit.com/replit-workspace/workspace-features/secrets). Note that public Replit projects expose all files, including .env files, so **do not use .env files on Replt.** Enter your secret variables through Replit's Secrets tool.
+   - Add your ACK Lab credentials. You can find these ID and SECRET variables in the API KEYS section for each agent.
    ```env
    ANTHROPIC_API_KEY=your_anthropic_key
    CLIENT_ID_SWAP_USER=your_swap_user_client_id
@@ -390,7 +390,7 @@ This demo uses **real ACK-Lab infrastructure** for authentication and payment pr
 
 ## 🌟 About Agent Commerce Kit (ACK)
 
-**Agent Commerce Kit (ACK)** is a set of open-source patterns built by [Catena Labs](https://www.catenalabs.com) to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
+[**Agent Commerce Kit (ACK)**](https://agentcommercekit.com) is a set of open-source patterns to enable AI agents to participate securely in commerce. As we advance toward an AI-native financial future, ACK addresses the fundamental challenge that today's financial infrastructure was not designed for intelligent machines.
 
 ### The Vision
 
@@ -401,14 +401,14 @@ Rapid advancements in AI are creating a new "agent economy" where autonomous age
 - **Untapped Economic Potential**: Current systems cannot support novel transaction models like micropayments for data or direct agent-to-agent payments
 
 ACK solves these challenges through two complementary protocols:
-- **ACK-ID**: Verifiable agent identity through DIDs and Verifiable Credentials
+- **ACK-ID**: Verifiable agent identity through Decentralized Identifiers (DIDs) and Verifiable Credentials (VCs)
 - **ACK-Pay**: Agent-native payment patterns for seamless transactions
 
 Learn more at [agentcommercekit.com](https://agentcommercekit.com)
 
 ## 🚀 Getting Started with ACK-Lab
 
-**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview platform where you can leverage ACK implementations to give your agents:
+**ACK-Lab** ([ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)) is the trust and control plane for agents - a developer preview where you can leverage ACK implementations to give your agents:
 
 1. **An Identity**: A verifiable, cryptographic ID so your agent can prove who it is
 2. **A Wallet**: A secure wallet so your agent can pay and get paid
