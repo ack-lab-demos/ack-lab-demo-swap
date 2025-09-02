@@ -19,7 +19,7 @@ another agent (Swap Service) providing the swap service.
 
 To run this demo, you need to:
 
-1. **Sign up for ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
+1. **Join the ACK-Lab Developer Preview** at [ack-lab.catenalabs.com](https://ack-lab.catenalabs.com)
 2. If you have not done so already in ACK-Lab, **register your agents** to obtain credentials.(see [Registering Your Agents on ACK-Lab](#registering-your-agents-on-ack-lab) below)
 3. **Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) Note: This demo requires `claude-sonnet-4-20250514`. We cannot guarantee it works end-to-end with smaller models from Anthropic or other providers.
 4. **Save your Secrets in Replit** (see [Quick Start on Replit](#quick-start-on-replit))
