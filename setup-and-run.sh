@@ -431,7 +431,7 @@ cleanup_and_exit() {
     print_info "Thanks for trying the USDC to SOL Swap Demo!"
     print_color "$CYAN" "\n📖 Quick Reference:"
     print_color "$CYAN" "  • Exit shortcut: Ctrl+C (works on all platforms: Windows/Linux/Mac)"
-    print_color "$CYAN" "  • Restart demo: Run ./setup-and-run.sh again"
+    print_color "$CYAN" "  • Restart demo: Run `npm run dev` again"
     print_color "$CYAN" "  • Documentation: Check README.md for more details"
     print_color "$CYAN" "  • Price feeds: Powered by Pyth Network (https://pyth.network)\n"
     exit 0

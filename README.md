@@ -172,7 +172,7 @@ The demo is optimized for Replit's cloud environment with automatic port forward
 
 3. **Run the Demo**
    - Click the "Run" button in Replit
-   - The setup script (`./setup-and-run.sh`) will automatically:
+   - The setup script (`npm run dev`) will automatically:
      - Install dependencies
      - Start both agent servers
      - Launch the interactive menu
@@ -207,7 +207,7 @@ For local development and testing:
 
 3. **Run the Setup Script**
 ```bash
-   ./setup-and-run.sh
+   npm run dev
    ```
 
 ### Quick Start Options
