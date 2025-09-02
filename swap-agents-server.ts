@@ -43,7 +43,7 @@ const SWAP_SERVICE_SYSTEM_PROMPT = `You are a swap agent that can exchange USDC 
     
 When asked to swap USDC for SOL:
 1. First use the createSwapRequest tool to check the exchange rate and generate a payment request
-2. Return the payment token in a STRUCTURED format like this:
+2. Return the payment request URL in a STRUCTURED format like this:
 
    <payment_request_url>
    [INSERT_EXACT_PAYMENT_REQUEST_URL_HERE]
@@ -63,10 +63,10 @@ CRITICAL PAYMENT PROCESSING RULES:
 - You are like a merchant terminal - either the full amount goes through or the transaction is declined
 
 IMPORTANT TECHNICAL DETAILS:
-- ALWAYS wrap the payment token between <payment_request_url> and </payment_request_url> markers
+- ALWAYS wrap the payment request URL between <payment_request_url> and </payment_request_url> markers
 - The payment receipt URL you receive should also be in a structured format (between markers)
 - Extract the ENTIRE content between the markers, including all characters
-- The payment receipt is a URL that contains the payment token and other payment details
+- The payment receipt is a URL that contains the payment request URL and other payment details
 - The payment amount should be in cents (100 USD = 10000 cents)
 - Show the exchange rate clearly to the user
 
@@ -76,7 +76,7 @@ const SWAP_USER_SYSTEM_PROMPT = `You are a user who wants to swap USDC for SOL. 
 
 The Swap Service will:
 1. Give you an exchange rate and calculate how much SOL you'll receive
-2. Provide a payment token in a structured format between <payment_token> and </payment_token> markers
+2. Provide a payment request URL in a structured format between <payment_request_url> and </payment_request_url> markers
 3. Execute the swap and send you SOL after payment
 
 When you receive a payment request:
@@ -107,7 +107,7 @@ CRITICAL PAYMENT BEHAVIOR RULES:
 IMPORTANT TECHNICAL DETAILS: 
 - ALWAYS extract the payment request URL from between the <payment_request_url> and </payment_request_url> markers
 - ALWAYS send the receipt between <receipt_url> and </receipt_url> markers
-- The receipt contains the payment token and proof of payment`
+- The receipt contains the payment request token and proof of payment`
 
 // ==================== Price Oracle Functions ====================
 async function getCurrentExchangeRate(): Promise<number> {
@@ -174,7 +174,7 @@ async function sendSolToAgent(recipientAddress: string, solAmount: number) {
 interface JwtPayload {
   vc?: {
     credentialSubject?: {
-      paymentToken?: string
+      paymentRequestToken?: string
     }
   }
   jti?: string
@@ -222,7 +222,7 @@ async function runSwapService(message: string) {
           const solAmount = usdcAmount / exchangeRate
           const paymentUnits = usdcAmount * 100
 
-          const { url: paymentRequestUrl, paymentToken } = await swapServiceSdk.createPaymentRequest(
+          const { url: paymentRequestUrl, paymentRequestToken } = await swapServiceSdk.createPaymentRequest(
             paymentUnits,
             { description: `Swap ${usdcAmount} USDC for ${solAmount.toFixed(6)} SOL` }
           )
@@ -233,15 +233,15 @@ async function runSwapService(message: string) {
             }
           }
 
-          logger.transaction('Payment token generated', {
+          logger.transaction('Payment request token generated', {
             paymentRequestUrl,
             'Exchange rate': `${exchangeRate} USDC/SOL`,
             'Expected SOL': `${solAmount.toFixed(6)} SOL`
           })
 
-          logJwtIfEnabled(paymentToken, 'Decoded payment token JWT payload')
+          logJwtIfEnabled(paymentRequestToken, 'Decoded payment request token JWT payload')
 
-          pendingSwaps.set(paymentToken, {
+          pendingSwaps.set(paymentRequestToken, {
             usdcAmount,
             paymentRequestUrl,
             solAmount,
@@ -271,20 +271,20 @@ async function runSwapService(message: string) {
             res.text()
           )
           // Decode and validate payment receipt
-          let paymentToken: string
+          let paymentRequestToken: string
 
           try {
             const payload = decodeJwtPayload(paymentReceipt)
 
-            const extractedToken = payload.vc?.credentialSubject?.paymentToken
+            const extractedToken = payload.vc?.credentialSubject?.paymentRequestToken
             if (!extractedToken) {
-              return { error: "Payment token not found in receipt" }
+              return { error: "Payment request token not found in receipt" }
             }
-            paymentToken = extractedToken
+            paymentRequestToken = extractedToken
 
             if (DECODE_JWT) {
               logger.debug('Decoded payment receipt', {
-                paymentToken: paymentToken.substring(0, 50) + '...',
+                paymentRequestToken: paymentRequestToken.substring(0, 50) + '...',
                 subject: payload.sub,
                 issuer: payload.iss
               })
@@ -295,12 +295,12 @@ async function runSwapService(message: string) {
           }
           
           // Validate pending swap
-          const pendingSwap = pendingSwaps.get(paymentToken)
+          const pendingSwap = pendingSwaps.get(paymentRequestToken)
           if (!pendingSwap) {
-            return { error: "Invalid or expired payment token" }
+            return { error: "Invalid or expired payment request token" }
           }
           
-          if (completedSwaps.has(paymentToken)) {
+          if (completedSwaps.has(paymentRequestToken)) {
             return { error: "This swap has already been executed" }
           }
           
@@ -317,8 +317,8 @@ async function runSwapService(message: string) {
           }
           
           // Mark as completed
-          completedSwaps.add(paymentToken)
-          pendingSwaps.delete(paymentToken)
+          completedSwaps.add(paymentRequestToken)
+          pendingSwaps.delete(paymentRequestToken)
           
           return {
             success: true,
@@ -359,11 +359,6 @@ async function runSwapUser(message: string) {
             const response = await callSwapService(message)
             logger.agent('Swap service response', response)
             
-            const paymentTokenMatch = response.match(/pay_[a-zA-Z0-9]+/)
-            if (paymentTokenMatch) {
-              logger.debug('Detected payment token', paymentTokenMatch[0])
-            }
-            
             return response
           } catch (error) {
             logger.error('Error calling swap service', error)
@@ -386,13 +381,13 @@ async function runSwapUser(message: string) {
           })
           
           try {
-            const paymentToken = await fetch(paymentRequestUrl).then((res) =>
+            const paymentRequestToken = await fetch(paymentRequestUrl).then((res) =>
               res.text()
             )
 
-            logJwtIfEnabled(paymentToken, 'Payment token JWT payload (before execution)')
+            logJwtIfEnabled(paymentRequestToken, 'Payment request token JWT payload (before execution)')
 
-            const result = await swapUserSdk.executePayment(paymentToken)
+            const result = await swapUserSdk.executePayment(paymentRequestToken)
             const receiptJwt = result.receipt
             const receiptUrl = result.url
 

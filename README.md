@@ -55,7 +55,7 @@ This demo leverages the **Agent Commerce Kit (ACK)** to enable secure, robust tr
 
 ### ACK-Pay (Payment Processing)
 - **Secure Transactions**: Processes payments between agents with built-in security and compliance
-- **Payment Tokens**: Generates cryptographically secure payment tokens for transaction authorization
+- **Payment Request Tokens**: Generates cryptographically secure payment request tokens for transaction authorization
 - **Settlement**: Handles the financial settlement between agent wallets
 
 ### ack-lab SDK
@@ -134,7 +134,7 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
 
 4. **Payment Flow**: When agents agree on a swap:
    - Swap Service fetches real-time SOL/USD price from Pyth Network
-   - Swap Service generates a payment token via ACK-Pay
+   - Swap Service generates a payment request token via ACK-Pay
    - Swap User validates and processes the payment
    - Swap Service executes the swap and sends SOL upon payment confirmation
 
@@ -268,7 +268,7 @@ The demo simulates a cryptocurrency swap service where:
 ### Swap User
 - Represents a user wanting to swap USDC for SOL
 - Uses a mock wallet address (7VQo3HWesNfBys5VXJF3NcE5JCBsRs25pAoBxD5MJYGp)
-- Executes payments using ACK-Pay (real payment tokens, settled in Solana testnet)
+- Executes payments using ACK-Pay (real payment request tokens, settled in Solana testnet)
 - Confirms transaction receipts
 
 ### Swap Service
@@ -344,7 +344,7 @@ Current exchange rate: 150.50 USDC/SOL
 You will receive: 0.664452 SOL
 
 Payment request created for 100 USDC (10000 units)
-Payment token: pay_abc123xyz...                    [REAL ACK-PAY TOKEN]
+Payment request token: pay_abc123xyz...                    [REAL ACK-PAY TOKEN]
 
 Executing payment...
 ✅ Payment successful! Receipt ID: rcpt_def456...  [REAL ACK-PAY RECEIPT]
@@ -380,7 +380,7 @@ This demo uses **real ACK-Lab infrastructure** for authentication and payment pr
 
 ### ✅ Real Components
 - **ACK-Lab Authentication**: Actual agent identity verification and JWT token generation
-- **ACK-Pay Payment Processing**: Real payment token creation and validation
+- **ACK-Pay Payment Processing**: Real payment request token creation and validation
 - **Pyth Network Price Oracle**: Live SOL/USD price feeds from Pyth
 - **Agent Communication**: Authentic HTTP-based agent-to-agent messaging
 
