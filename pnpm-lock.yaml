@@ -9,17 +9,17 @@ importers:
   .:
     dependencies:
       '@ack-lab/sdk':
-        specifier: 0.0.4
-        version: 0.0.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
+        specifier: 0.1.0
+        version: 0.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@ai-sdk/anthropic':
         specifier: ^2.0.4
         version: 2.0.9(zod@3.25.76)
       '@hono/node-server':
         specifier: ^1.18.2
-        version: 1.19.1(hono@4.9.5)
+        version: 1.19.1(hono@4.9.7)
       '@hono/valibot-validator':
         specifier: ^0.5.3
-        version: 0.5.3(hono@4.9.5)(valibot@1.1.0(typescript@5.9.2))
+        version: 0.5.3(hono@4.9.7)(valibot@1.1.0(typescript@5.9.2))
       '@inquirer/prompts':
         specifier: ^7.8.2
         version: 7.8.4(@types/node@24.3.0)
@@ -39,8 +39,8 @@ importers:
         specifier: ^17.2.1
         version: 17.2.1
       hono:
-        specifier: ^4.9.1
-        version: 4.9.5
+        specifier: ^4.9.6
+        version: 4.9.7
       valibot:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.9.2)
@@ -75,8 +75,8 @@ importers:
 
 packages:
 
-  '@ack-lab/sdk@0.0.4':
-    resolution: {integrity: sha512-SyI4Rfd2tBOQTXCLOBw9oY66z2xhC3YyK2JrpsmHNwR0NNJWA5mHsfq6fbFiqqrriFAep42FSQyEicvJCq0I2g==}
+  '@ack-lab/sdk@0.1.0':
+    resolution: {integrity: sha512-hksxDhN/oV/2/EFZl4/ocsfmhkGtjUgBhoNHUKdP7f+gkMOg0zKR33/+67ZTjPRNSr32iTtz37f9buLtTfVxqg==}
 
   '@agentcommercekit/ack-id@0.9.1':
     resolution: {integrity: sha512-+GzRNeqvP2cT21lmxRxGbt5yB3gzYAZ8ASaJ/4jWfSSXIyvtXJ8UmaIN4f+8CGVF+NkW2RXBzjNyRkX72ibKJA==}
@@ -91,14 +91,6 @@ packages:
 
   '@agentcommercekit/ack-pay@0.10.0':
     resolution: {integrity: sha512-1kZJhm4Ng3Fc0Mhuf9xBwutTnAAtPXZj23RFyHLqdHilslVtnUL+S4027dpiiriv1GY7vBJwqG2/Wk6YzUWJcA==}
-    peerDependencies:
-      zod: ^3.25.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
-
-  '@agentcommercekit/ack-pay@0.9.2':
-    resolution: {integrity: sha512-85BgSrj4SEgJXnGfWt0YvWvsrB4ldNjHGBFGsnuOV4i0rVvmuU/aQTH4g2t+V7Jmv+0ADbXOJtbR2FWaSxA+FA==}
     peerDependencies:
       zod: ^3.25.0
     peerDependenciesMeta:
@@ -700,20 +692,6 @@ packages:
       zod:
         optional: true
 
-  agentcommercekit@0.9.2:
-    resolution: {integrity: sha512-ZPnwc+Xe3eZqeV4key96RaIzZo8B0X7FxjeGRRncyo1LlGe2tjJuzdsCtIpXpk9SP/3RE1b63O9dDlyodE+fOA==}
-    peerDependencies:
-      '@a2a-js/sdk': ^0.2.2
-      valibot: ^1.0.0
-      zod: ^3.25.0
-    peerDependenciesMeta:
-      '@a2a-js/sdk':
-        optional: true
-      valibot:
-        optional: true
-      zod:
-        optional: true
-
   ai@5.0.29:
     resolution: {integrity: sha512-jA/d6X5hn3r/PxgZjwzDUMJiEkLBIVVD2gcbpcT/FD4MSLxm5sn6fH1y2VFXVgBEd95mNzQ8ALQubysc6E8Y9g==}
     engines: {node: '>=18'}
@@ -1033,8 +1011,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.9.5:
-    resolution: {integrity: sha512-aLAVl5/67ifNnoFVxnhR89dpmSLsgwBprw/PT671ASwUpJqmd7Ne8KPTQo37DbRZfgpHaHeZ4bPVUvbOkeedMw==}
+  hono@4.9.7:
+    resolution: {integrity: sha512-t4Te6ERzIaC48W3x4hJmBwgNlLhmiEdEE5ViYb02ffw4ignHNHa5IBtPjmbKstmtKa8X6C35iWwK4HaqvrzG9w==}
     engines: {node: '>=16.9.0'}
 
   iconv-lite@0.6.3:
@@ -1383,9 +1361,9 @@ packages:
 
 snapshots:
 
-  '@ack-lab/sdk@0.0.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
+  '@ack-lab/sdk@0.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
-      agentcommercekit: 0.9.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
+      agentcommercekit: 0.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
       jose: 6.1.0
       safe-stable-stringify: 2.5.0
       standard-parse: 0.3.0(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
@@ -1415,19 +1393,6 @@ snapshots:
       - typescript
 
   '@agentcommercekit/ack-pay@0.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
-    dependencies:
-      '@agentcommercekit/did': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-      '@agentcommercekit/jwt': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
-      '@agentcommercekit/keys': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
-      '@agentcommercekit/vc': 0.9.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-      valibot: 1.1.0(typescript@5.9.2)
-    optionalDependencies:
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-      - typescript
-
-  '@agentcommercekit/ack-pay@0.9.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
       '@agentcommercekit/did': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@agentcommercekit/jwt': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
@@ -1648,13 +1613,13 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@hono/node-server@1.19.1(hono@4.9.5)':
+  '@hono/node-server@1.19.1(hono@4.9.7)':
     dependencies:
-      hono: 4.9.5
+      hono: 4.9.7
 
-  '@hono/valibot-validator@0.5.3(hono@4.9.5)(valibot@1.1.0(typescript@5.9.2))':
+  '@hono/valibot-validator@0.5.3(hono@4.9.7)(valibot@1.1.0(typescript@5.9.2))':
     dependencies:
-      hono: 4.9.5
+      hono: 4.9.7
       valibot: 1.1.0(typescript@5.9.2)
 
   '@humanfs/core@0.19.1': {}
@@ -1974,22 +1939,6 @@ snapshots:
     dependencies:
       '@agentcommercekit/ack-id': 0.9.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@agentcommercekit/ack-pay': 0.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-      '@agentcommercekit/caip': 0.1.0(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
-      '@agentcommercekit/did': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-      '@agentcommercekit/jwt': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
-      '@agentcommercekit/keys': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
-      '@agentcommercekit/vc': 0.9.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-    optionalDependencies:
-      valibot: 1.1.0(typescript@5.9.2)
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-      - typescript
-
-  agentcommercekit@0.9.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76):
-    dependencies:
-      '@agentcommercekit/ack-id': 0.9.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
-      '@agentcommercekit/ack-pay': 0.9.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@agentcommercekit/caip': 0.1.0(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
       '@agentcommercekit/did': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@agentcommercekit/jwt': 0.9.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
@@ -2368,7 +2317,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.9.5: {}
+  hono@4.9.7: {}
 
   iconv-lite@0.6.3:
     dependencies:

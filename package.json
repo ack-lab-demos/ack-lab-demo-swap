@@ -22,7 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ack-lab/sdk": "0.0.7",
+    "@ack-lab/sdk": "0.1.0",
     "@ai-sdk/anthropic": "^2.0.4",
     "@hono/node-server": "^1.18.2",
     "@hono/valibot-validator": "^0.5.3",
