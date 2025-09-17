@@ -11,10 +11,10 @@ NC='\033[0m' # No Color
 # ==================== Configuration ====================
 REQUIRED_VARS=(
     "ANTHROPIC_API_KEY"
-    "CLIENT_ID_SWAP_USER"
-    "CLIENT_SECRET_SWAP_USER"
-    "CLIENT_ID_SWAP_SERVICE"
-    "CLIENT_SECRET_SWAP_SERVICE"
+    "AGENT_ID_SWAP_USER"
+    "AGENT_ID_SWAP_SERVICE"
+    "ACK_LAB_CLIENT_ID"
+    "ACK_LAB_CLIENT_SECRET"
 )
 
 SWAP_USER_LOCAL_PORT=7576
@@ -62,7 +62,7 @@ detect_environment() {
 get_port_for_environment() {
     local service=$1
     local environment=$2
-    
+
     case "$service" in
         "swap_user")
             if [ "$environment" = "replit" ]; then
@@ -84,7 +84,7 @@ get_port_for_environment() {
 # ==================== Environment Setup Functions ====================
 ensure_env_file() {
     local needs_update=false
-    
+
     # On Replit, we use Secrets for sensitive data
     # .env is only for non-sensitive runtime settings
     if [ -n "$REPLIT_DEV_DOMAIN" ]; then
@@ -110,7 +110,7 @@ ensure_env_file() {
         fi
         return
     fi
-    
+
     # Local environment - normal .env handling
     if [ ! -f ".env" ]; then
         print_warning "Creating .env file..."
@@ -119,14 +119,14 @@ ensure_env_file() {
         print_success ".env file created with required settings"
         return
     fi
-    
+
     print_success ".env file found"
-    
+
     # Check and fix required settings
     local temp_file=$(mktemp)
     echo "DECODE_JWT=true" > "$temp_file"
     echo "NODE_NO_WARNINGS=1" >> "$temp_file"
-    
+
     # Preserve existing variables (except the ones we're setting)
     while IFS= read -r line || [ -n "$line" ]; do
         if [[ ! "$line" =~ ^DECODE_JWT= ]] && \
@@ -135,7 +135,7 @@ ensure_env_file() {
             echo "$line" >> "$temp_file"
         fi
     done < .env
-    
+
     # Check if file needs updating
     if ! diff -q .env "$temp_file" > /dev/null 2>&1; then
         print_warning "Updating .env file with required settings..."
@@ -178,29 +178,29 @@ get_credential_prompt() {
         "ANTHROPIC_API_KEY")
             echo "Enter your Anthropic API Key:"
             ;;
-        "CLIENT_ID_SWAP_USER")
-            echo "Enter CLIENT_ID for Swap User:"
+        "AGENT_ID_SWAP_USER")
+            echo "Enter AGENT_ID for Swap User:"
             ;;
-        "CLIENT_SECRET_SWAP_USER")
-            echo "Enter CLIENT_SECRET for Swap User:"
+        "AGENT_ID_SWAP_SERVICE")
+            echo "Enter AGENT_ID for Swap Service:"
             ;;
-        "CLIENT_ID_SWAP_SERVICE")
-            echo "Enter CLIENT_ID for Swap Service:"
+        "ACK_LAB_CLIENT_ID")
+            echo "Enter ACK-Lab CLIENT_ID:"
             ;;
-        "CLIENT_SECRET_SWAP_SERVICE")
-            echo "Enter CLIENT_SECRET for Swap Service:"
+        "ACK_LAB_CLIENT_SECRET")
+            echo "Enter ACK-Lab CLIENT_SECRET:"
             ;;
     esac
 }
 
 prompt_for_credentials() {
     local missing_vars=("$@")
-    
+
     if [ ${#missing_vars[@]} -eq 0 ]; then
         print_success "All required credentials are configured"
         return 0
     fi
-    
+
     print_warning "Missing required credentials!"
     echo ""
     print_info "This demo requires:"
@@ -213,7 +213,7 @@ prompt_for_credentials() {
     print_info "Get ACK Lab credentials from: https://ack-lab.catenalabs.com"
     print_info "For each agent, click 'Create API Key' and copy the credentials when prompted."
     echo ""
-    
+
     # Check if we're on Replit
     if [ -n "$REPLIT_DEV_DOMAIN" ]; then
         print_color "$YELLOW" "🔐 You're running on Replit - Use the Secrets tool for secure storage!"
@@ -222,29 +222,29 @@ prompt_for_credentials() {
         print_success "1. Click the 🔒 'Secrets' icon in the Tools panel (left sidebar)"
         print_success "2. Add each of the following secrets with their exact names:"
         echo ""
-        
+
         for var in "${missing_vars[@]}"; do
             print_color "$CYAN" "   • ${var}"
             case $var in
                 "ANTHROPIC_API_KEY")
                     print_info "     Your Anthropic API key from https://console.anthropic.com/"
                     ;;
-                "CLIENT_ID_SWAP_USER")
-                    print_info "     Client ID for Swap User"
+                "AGENT_ID_SWAP_USER")
+                    print_info "     AGENT_ID for Swap User"
                     ;;
-                "CLIENT_SECRET_SWAP_USER")
-                    print_info "     Client Secret for Swap User"
+                "AGENT_ID_SWAP_SERVICE")
+                    print_info "     AGENT_ID for Swap Service"
                     ;;
-                "CLIENT_ID_SWAP_SERVICE")
-                    print_info "     Client ID for Swap Service"
+                "ACK_LAB_CLIENT_ID")
+                    print_info "     ACK-Lab Client ID"
                     ;;
-                "CLIENT_SECRET_SWAP_SERVICE")
-                    print_info "     Client Secret for Swap Service"
+                "ACK_LAB_CLIENT_SECRET")
+                    print_info "     ACK-Lab Client Secret"
                     ;;
             esac
             echo ""
         done
-        
+
         print_warning "⚠️  IMPORTANT: Do NOT use .env file on public Replit projects!"
         print_warning "Public Replit projects expose all files, including .env"
         print_warning "The Secrets tool keeps your credentials secure and private"
@@ -259,7 +259,7 @@ prompt_for_credentials() {
             local prompt=$(get_credential_prompt "$var")
             print_color "$CYAN" "$prompt"
             read -p "> " value
-            
+
             if [ -n "$value" ]; then
                 if grep -q "^${var}=" .env 2>/dev/null; then
                     sed -i.bak "s|^${var}=.*|${var}=${value}|" .env && rm .env.bak
@@ -273,7 +273,7 @@ prompt_for_credentials() {
             fi
             echo ""
         done
-        
+
         # Reload environment after updates
         load_env
     fi
@@ -287,7 +287,7 @@ validate_credentials() {
             has_missing=true
         fi
     done
-    
+
     if [ "$has_missing" = true ]; then
         if [ -n "$REPLIT_DEV_DOMAIN" ]; then
             echo ""
@@ -297,24 +297,24 @@ validate_credentials() {
         fi
         return 1
     fi
-    
+
     return 0
 }
 
 # ==================== Installation Functions ====================
 install_dependencies() {
     print_info "📦 Installing root dependencies..."
-    
+
     if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules" ]; then
         print_warning "Running npm install..."
-        
+
         if ! command -v npm &> /dev/null; then
             print_error "npm is not installed. Please install Node.js and npm first."
             exit 1
         fi
-        
+
         npm install
-        
+
         if [ $? -eq 0 ]; then
             print_success "Root dependencies installed successfully"
         else
@@ -337,7 +337,7 @@ check_agents_status() {
     local max_attempts=5
     local swap_user_running=false
     local swap_service_running=false
-    
+
     for i in $(seq 1 $max_attempts); do
         if curl -f -s http://localhost:${SWAP_USER_LOCAL_PORT} > /dev/null 2>&1; then
             swap_user_running=true
@@ -345,15 +345,15 @@ check_agents_status() {
         if curl -f -s http://localhost:${SWAP_SERVICE_LOCAL_PORT} > /dev/null 2>&1; then
             swap_service_running=true
         fi
-        
+
         if [ "$swap_user_running" = true ] && [ "$swap_service_running" = true ]; then
             print_success "Both swap agent servers are running!"
             return 0
         fi
-        
+
         sleep 1
     done
-    
+
     print_warning "Swap agent servers may still be starting..."
     return 1
 }
@@ -362,9 +362,9 @@ display_endpoints() {
     local environment=$1
     local swap_user_port=$(get_port_for_environment "swap_user" "$environment")
     local swap_service_port=$(get_port_for_environment "swap_service" "$environment")
-    
+
     print_info "\nSwap Agent Server Endpoints:"
-    
+
     if [ "$environment" = "replit" ]; then
         print_warning "Port forwarding on Replit:"
         print_color "$CYAN" "  • Local port $SWAP_USER_LOCAL_PORT → External port $swap_user_port"
@@ -384,7 +384,7 @@ run_tutorial() {
     print_warning "This tutorial will guide you through ACK-Lab's rule system."
     print_warning "You'll learn how to protect your automated transactions with rules."
     print_color "$CYAN" "Follow the step-by-step instructions to complete the tutorial.\n"
-    
+
     npx tsx cli-demos/swap-demo.ts
 }
 
@@ -394,7 +394,7 @@ run_cli_demo() {
     print_warning "Example: 'swap 25 USDC for SOL'"
     print_warning "Type /exit to quit the CLI demo and return to this menu."
     print_color "$CYAN" "Or use Ctrl+C to force exit the demo.\n"
-    
+
     SKIP_TUTORIAL=true npx tsx cli-demos/swap-demo.ts
 }
 
@@ -420,14 +420,14 @@ display_post_action_menu() {
 
 cleanup_and_exit() {
     local agents_pid=$1
-    
+
     print_warning "\n👋 Shutting down..."
-    
+
     if [ -n "$agents_pid" ]; then
         kill $agents_pid 2>/dev/null
         print_success "Agent servers stopped"
     fi
-    
+
     print_info "Thanks for trying the USDC to SOL Swap Demo!"
     print_color "$CYAN" "\n📖 Quick Reference:"
     print_color "$CYAN" "  • Exit shortcut: Ctrl+C (works on all platforms: Windows/Linux/Mac)"
@@ -441,18 +441,18 @@ cleanup_and_exit() {
 main() {
     # Initial setup
     print_header "💱 USDC to SOL Swap Demo Setup"
-    
+
     # Setup environment
     ensure_env_file
     load_env
-    
+
     echo ""
     print_info "🔧 Checking required credentials..."
-    
+
     # Check and prompt for missing credentials
     local missing_vars=($(get_missing_vars))
     prompt_for_credentials "${missing_vars[@]}"
-    
+
     # Validate all credentials are set
     if ! validate_credentials; then
         print_error "Cannot start demo without all required credentials."
@@ -464,20 +464,20 @@ main() {
         fi
         exit 1
     fi
-    
+
     # Install dependencies
     echo ""
     install_dependencies
-    
+
     # Detect environment
     echo ""
     local environment=$(detect_environment)
-    
+
     # Start services
     echo ""
     print_info "🎯 Starting USDC to SOL Swap Agents Server..."
     print_warning "This will start two swap agent servers:"
-    
+
     if [ "$environment" = "replit" ]; then
         print_warning "• Swap User: Port $SWAP_USER_LOCAL_PORT (accessible via port 3000) - Wants to swap USDC for SOL"
         print_warning "• Swap Service: Port $SWAP_SERVICE_LOCAL_PORT (accessible via port 3001) - Executes the swap using Pyth price feeds"
@@ -486,28 +486,28 @@ main() {
         print_warning "• Swap Service: Port $SWAP_SERVICE_LOCAL_PORT - Executes the swap using Pyth price feeds"
     fi
     echo ""
-    
+
     local agents_pid=$(start_agent_servers)
     sleep 3
     check_agents_status
-    
+
     # Display service information
     display_endpoints "$environment"
-    
+
     echo ""
     print_info "💱 Swap Demo Features:"
     print_color "$CYAN" "  • Real-time SOL/USD pricing from Pyth Network"
     print_color "$CYAN" "  • USDC payments via ACK Lab SDK"
     print_color "$CYAN" "  • Simulated DEX swap execution"
     print_color "$CYAN" "  • SOL delivery to the wallet"
-    
+
     # Main interaction loop
     echo ""
     display_menu
-    
+
     while true; do
         read -p "$(print_color "$CYAN" "Enter your choice (1/2/3): ")" choice
-        
+
         case $choice in
             1)
                 run_tutorial

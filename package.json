@@ -2,7 +2,7 @@
   "name": "ack-lab-demo-swap",
   "version": "1.0.0",
   "description": "Ack Lab Demo: Swap",
-  "main": "swap-demo.ts",
+  "main": "cli-demos/swap-demo.ts",
   "type": "module",
   "scripts": {
     "start": "tsx cli-demos/swap-demo.ts",
@@ -22,7 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ack-lab/sdk": "0.0.7",
+    "@ack-lab/sdk": "0.1.1",
     "@ai-sdk/anthropic": "^2.0.4",
     "@hono/node-server": "^1.18.2",
     "@hono/valibot-validator": "^0.5.3",
