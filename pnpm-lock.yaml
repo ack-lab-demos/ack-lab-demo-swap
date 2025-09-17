@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ack-lab/sdk':
-        specifier: 0.1.0
-        version: 0.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
+        specifier: 0.1.1
+        version: 0.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)
       '@ai-sdk/anthropic':
         specifier: ^2.0.4
         version: 2.0.9(zod@3.25.76)
@@ -75,8 +75,8 @@ importers:
 
 packages:
 
-  '@ack-lab/sdk@0.1.0':
-    resolution: {integrity: sha512-hksxDhN/oV/2/EFZl4/ocsfmhkGtjUgBhoNHUKdP7f+gkMOg0zKR33/+67ZTjPRNSr32iTtz37f9buLtTfVxqg==}
+  '@ack-lab/sdk@0.1.1':
+    resolution: {integrity: sha512-TKYg+/sLPRDN+6TS0XY23zJOYFzKMcekmRSZwUNWe9YLFt02iGW27zfOQx+ej7R/Ns6SvduD8jl3iJxCCR2SuA==}
 
   '@agentcommercekit/ack-id@0.9.1':
     resolution: {integrity: sha512-+GzRNeqvP2cT21lmxRxGbt5yB3gzYAZ8ASaJ/4jWfSSXIyvtXJ8UmaIN4f+8CGVF+NkW2RXBzjNyRkX72ibKJA==}
@@ -1361,7 +1361,7 @@ packages:
 
 snapshots:
 
-  '@ack-lab/sdk@0.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
+  '@ack-lab/sdk@0.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
       agentcommercekit: 0.10.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))(zod@3.25.76)
       jose: 6.1.0

@@ -121,8 +121,8 @@ The demo spins up two independent agent servers that communicate via HTTP endpoi
    ```typescript
    const swapUserSdk = new AckLabAgent({
      baseUrl: "https://api.ack-lab.com",
-     clientId: process.env.CLIENT_ID_SWAP_USER,
-     clientSecret: process.env.CLIENT_SECRET_SWAP_USER,
+     clientId: process.env.ACK_LAB_CLIENT_ID,
+     clientSecret: process.env.ACK_LAB_CLIENT_SECRET,
      agentId: process.env.AGENT_ID_SWAP_USER,
    });
    ```
@@ -171,11 +171,9 @@ The demo is optimized for Replit's cloud environment with automatic port forward
 
    ```env
    ANTHROPIC_API_KEY=your_anthropic_key
-   CLIENT_ID_SWAP_USER=your_swap_user_client_id
-   CLIENT_SECRET_SWAP_USER=your_swap_user_client_secret
+   ACK_LAB_CLIENT_ID=your_ack_lab_client_id
+   ACK_LAB_CLIENT_SECRET=your_ack_lab_client_secret
    AGENT_ID_SWAP_USER=your_swap_user_agent_id
-   CLIENT_ID_SWAP_SERVICE=your_swap_service_client_id
-   CLIENT_SECRET_SWAP_SERVICE=your_swap_service_client_secret
    AGENT_ID_SWAP_SERVICE=your_swap_service_agent_id
    ```
 
@@ -220,11 +218,9 @@ For local development and testing:
 
 ```env
    ANTHROPIC_API_KEY=your_anthropic_key
-   CLIENT_ID_SWAP_USER=your_swap_user_client_id
-   CLIENT_SECRET_SWAP_USER=your_swap_user_client_secret
+   ACK_LAB_CLIENT_ID=your_ack_lab_client_id
+   ACK_LAB_CLIENT_SECRET=your_ack_lab_client_secret
    AGENT_ID_SWAP_USER=your_swap_user_agent_id
-   CLIENT_ID_SWAP_SERVICE=your_swap_service_client_id
-   CLIENT_SECRET_SWAP_SERVICE=your_swap_service_client_secret
    AGENT_ID_SWAP_SERVICE=your_swap_service_agent_id
 ```
 
@@ -335,8 +331,8 @@ The demo simulates a cryptocurrency swap service where:
 const pythClient = new HermesClient("https://hermes.pyth.network", {});
 const swapServiceSdk = new AckLabAgent({
   baseUrl: "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_SWAP_SERVICE,
-  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE,
+  clientId: process.env.ACK_LAB_CLIENT_ID,
+  clientSecret: process.env.ACK_LAB_CLIENT_SECRET,
   agentId: process.env.AGENT_ID_SWAP_SERVICE,
 });
 

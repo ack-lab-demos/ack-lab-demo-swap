@@ -18,15 +18,15 @@ const pythClient = new HermesClient("https://hermes.pyth.network", {});
 
 const swapServiceAgent = new AckLabAgent({
   baseUrl: process.env.ACK_LAB_BASE_URL ?? "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_SWAP_SERVICE ?? "",
-  clientSecret: process.env.CLIENT_SECRET_SWAP_SERVICE ?? "",
+  clientId: process.env.ACK_LAB_CLIENT_ID ?? "",
+  clientSecret: process.env.ACK_LAB_CLIENT_SECRET ?? "",
   agentId: process.env.AGENT_ID_SWAP_SERVICE ?? "",
 });
 
 const swapUserAgent = new AckLabAgent({
   baseUrl: process.env.ACK_LAB_BASE_URL ?? "https://api.ack-lab.com",
-  clientId: process.env.CLIENT_ID_SWAP_USER ?? "",
-  clientSecret: process.env.CLIENT_SECRET_SWAP_USER ?? "",
+  clientId: process.env.ACK_LAB_CLIENT_ID ?? "",
+  clientSecret: process.env.ACK_LAB_CLIENT_SECRET ?? "",
   agentId: process.env.AGENT_ID_SWAP_USER ?? "",
 });
 
